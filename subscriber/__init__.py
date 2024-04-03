@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from paho.mqtt.client import Client
 import ssl
+import json
 import logging
+from wis2downloader.queuer import BaseQueue
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ class BaseSubscriber(ABC):
         pass
 
     @abstractmethod
-    def add_subscription(self, topic: str):
+    def add_subscription(self, topic: str, save_path: str):
         """Method to add subscription to active subscriptions"""
         pass
 
@@ -45,7 +47,7 @@ class BaseSubscriber(ABC):
 
 
 class MQTTSubscriber(BaseSubscriber):
-    def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443, uid: str = "everyone", pwd: str = "everyone", protocol: str = "websockets"):
+    def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443, uid: str = "everyone", pwd: str = "everyone", protocol: str = "websockets", queue: BaseQueue):
 
         LOGGER.debug("Initializing MQTT subscriber")
 
@@ -60,6 +62,9 @@ class MQTTSubscriber(BaseSubscriber):
         self.client.on_disconnect = self._on_disconnect
         self.client.on_message = self._on_message
         self.client.on_subscribe = self._on_subscribe
+
+        self.queue = queue
+        self.active_subscriptions = {}
 
         # Connect to the broker
         LOGGER.info("Connecting...")
@@ -79,22 +84,30 @@ class MQTTSubscriber(BaseSubscriber):
 
     def _on_message(self, client, userdata, msg):
         LOGGER.info(f"Message received under topic {msg.topic}")
+        
+        job = {
+            'topic': msg.topic,
+            'payload': json.loads(msg.payload)
+        }
+        self.queue.enqueue(job)
 
     def _on_subscribe(self, client, userdata, mid, reason_codes, properties):
         for sub_result in reason_codes:
-            if sub_result == 1:
+            if sub_result in [0, 1, 2]:
                 LOGGER.info("Subscription to topic successful")
             elif sub_result >= 128:
                 LOGGER.error(
-                    f"Subscription to topic failed with error code {sub_result}") # noqa
+                    f"Subscription to topic failed with error code {sub_result}")  # noqa
 
-    def add_subscription(self, topic: str):
+    def add_subscription(self, topic: str, save_path: str = "."):
         self.client.subscribe(topic)
+        self.active_subscriptions[topic] = save_path
         LOGGER.info(f"Subscribing to {topic}")
 
     def delete_subscription(self, topic: str):
         self.client.unsubscribe(topic)
+        del self.active_subscriptions[topic]
         LOGGER.info(f"Unsubscribing from {topic}")
 
-    def list_subscriptions(self) -> list:
-        pass
+    def list_subscriptions(self) -> dict:
+        return self.active_subscriptions

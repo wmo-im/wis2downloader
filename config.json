@@ -1,0 +1,11 @@
+{
+    "broker_url": "",
+    "broker_port": 443,
+    "username": "",
+    "password": "",
+    "protocol": "websockets",
+    "topics": [],
+    "download_dir": "",
+    "flask_host": "127.0.0.1",
+    "flask_port": 5000
+}

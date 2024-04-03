@@ -48,3 +48,7 @@ class SimpleQueue(BaseQueue):
 
     def is_empty(self) -> bool:
         return self._queue.empty()
+
+
+class RedisQueue(BaseQueue):
+    
