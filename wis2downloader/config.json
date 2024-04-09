@@ -9,5 +9,6 @@
     "flask_host": "127.0.0.1",
     "flask_port": 8080,
     "download_workers": 1,
-    "save_logs": true
+    "save_logs": false,
+    "log_dir": "logs"
 }

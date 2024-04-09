@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import threading
+from datetime import datetime as dt
 
 from flask import Flask, request
 
@@ -10,8 +11,6 @@ from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
 from wis2downloader.queue import SimpleQueue, QMonitor
 from wis2downloader.downloader import DownloadWorker
-
-setup_logger("INFO")
 
 
 def create_app(subscriber: BaseSubscriber):
@@ -98,6 +97,17 @@ def main():
 
     # Finally if the user wants to save the logs to a file
     save_logs = config.get("save_logs", False)
+    log_dir = config.get("log_dir", ".")
+
+    # Set up logging
+    if save_logs:
+        # Create log dir if it doesn't exist
+        os.makedirs(log_dir, exist_ok=True)
+        current_time = dt.now().strftime("%Y%m%d_%H%M%S")
+        log_file = os.path.join(log_dir, f'logs_{current_time}.txt')
+        setup_logger(loglevel='INFO', logfile=log_file)
+    else:
+        setup_logger(loglevel='INFO')
 
     # Now set up the different threads (plus job queue)
     # 1) queue monitor
