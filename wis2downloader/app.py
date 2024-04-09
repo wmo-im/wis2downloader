@@ -11,6 +11,55 @@ from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
 from wis2downloader.queue import SimpleQueue, QMonitor
 from wis2downloader.downloader import DownloadWorker
+import re
+
+
+def validate_topic(topic) -> bool:
+    """
+    Validate the topic for special characters, backslashes,
+    or escape codes.
+
+    Args:
+        topic (str): The topic to validate.
+
+    Returns:
+        bool: True if the topic is valid, False otherwise.
+    """
+    # Pattern for characters not allowed in topic (special characters except #)
+    bad_chars = re.compile('[@_!$%^&*()<>?|}{~:]')
+
+    bad_topic_error = "Invalid topic. It should not contain special characters, backslashes, or escape codes"  # noqa
+
+    if (bad_chars.search(topic) is not None
+            or '\\' in topic or '\n' in topic
+            or '\t' in topic or '\r' in topic):
+        LOGGER.error(bad_topic_error)
+        return False
+
+    return True
+
+
+def clean_target(target) -> str:
+    """
+    Cleans the target path by removing special characters.
+
+    Args:
+        target (str): The target path to validate.
+
+    Returns:
+        str: The sanitised target path.
+    """
+    # Pattern for special characters
+    special_chars = re.compile('[@_!#$%^&*()<>?|}{~:]')
+
+    if special_chars.search(target) is not None:
+        # Get unique character offenses to display in warning
+        char_matches = set(special_chars.findall(target))
+        char_matches_str = ', '.join(char_matches)
+        LOGGER.warning(f"Target contains invalid characters ({char_matches_str}), these will be automatically removed")  # noqa
+        return special_chars.sub('', target)
+
+    return target
 
 
 def create_app(subscriber: BaseSubscriber):
@@ -38,17 +87,27 @@ def create_app(subscriber: BaseSubscriber):
     # Enable adding, deleting, or listing subscriptions
     @app.route('/add')
     def add_subscription():
-        # Todo - validation of args
         topic = request.args.get('topic')
+        is_topic_valid = validate_topic(topic)
+        if not is_topic_valid:
+            return
+
         target = request.args.get('target')
         if target is None:
             target = "$TOPIC"
+        else:
+            clean_target(target)
+
         return subscriber.add_subscription(topic, target)
 
     @app.route('/delete')
     def delete_subscription():
-        # Todo - validation of args
         topic = request.args.get('topic')
+        is_topic_valid = validate_topic(topic)
+
+        if not is_topic_valid:
+            return
+
         return subscriber.delete_subscription(topic)
 
     @app.route('/list')
@@ -144,6 +203,13 @@ def main():
 
     # Add default subscriptions
     for topic, target in topics.items():
+        is_topic_valid = validate_topic(topic)
+        if not is_topic_valid:
+            continue
+
+        # Remove special characters from target
+        target = clean_target(target)
+
         subscriber.add_subscription(topic, target)
 
     # Now all background jobs / threads should be running, start the flask
