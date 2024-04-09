@@ -17,10 +17,10 @@ requires-python = ">=3.8"
 keywords = ["WIS2.0", "MQTT", "subscribe", "download"]
 license = {file = "LICENSE"}
 dependencies = [
-    "certifi",
+    "certifi>=2024.2.2",
     "flask",
-    "paho-mqtt",
-    "urllib3"
+    "paho-mqtt>=2.0.0 ",
+    "urllib3>=2.2.1"
 ]
 dynamic = ["version"]
 

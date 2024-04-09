@@ -26,11 +26,11 @@ def validate_topic(topic) -> bool:
         bool: True if the topic is valid, False otherwise.
     """
     # Pattern for characters not allowed in topic (special characters except #)
-    bad_chars = re.compile('[@_!$%^&*()<>?|}{~:]')
+    bad_topic_chars = re.compile('[@_!$%^&*()<>?|}{~:]')
 
     bad_topic_error = "Invalid topic. It should not contain special characters, backslashes, or escape codes"  # noqa
 
-    if (bad_chars.search(topic) is not None
+    if (bad_topic_chars.search(topic) is not None
             or '\\' in topic or '\n' in topic
             or '\t' in topic or '\r' in topic):
         LOGGER.error(bad_topic_error)
@@ -50,14 +50,14 @@ def clean_target(target) -> str:
         str: The sanitised target path.
     """
     # Pattern for special characters
-    special_chars = re.compile('[@_!#$%^&*()<>?|}{~:]')
+    bad_target_chars = re.compile('[@!#$%^&*()<>?|}{~:]')
 
-    if special_chars.search(target) is not None:
+    if bad_target_chars.search(target) is not None:
         # Get unique character offenses to display in warning
-        char_matches = set(special_chars.findall(target))
+        char_matches = set(bad_target_chars.findall(target))
         char_matches_str = ', '.join(char_matches)
         LOGGER.warning(f"Target contains invalid characters ({char_matches_str}), these will be automatically removed")  # noqa
-        return special_chars.sub('', target)
+        return bad_target_chars.sub('', target)
 
     return target
 
