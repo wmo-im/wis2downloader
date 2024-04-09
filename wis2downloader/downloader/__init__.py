@@ -21,34 +21,34 @@ class BaseDownloader(ABC):
         """Start the download worker to
         process messages from the queue indefinitely"""
         pass
-    
+
     @abstractmethod
     def process_job(self, job):
         """Process a single job from the queue"""
         pass
-    
+
     @abstractmethod
     def get_hash_info(self, job):
         """Extract the hash value and function from the job
         to be used for verification later"""
         pass
-    
+
     @abstractmethod
     def get_download_link(self, job):
         """Extract the download link from the job"""
         pass
-    
+
     @abstractmethod
     def extract_filename(self, _url, job):
         """Extract the filename from the download link"""
         pass
-    
+
     @abstractmethod
     def validate_hash(self, data, expected_hash, hash_function):
         """Validate the hash of the downloaded data against
         the expected hash value"""
         pass
-    
+
     @abstractmethod
     def save_file(self, data, target, filename, filesize, download_start):
         """Save the downloaded data to disk"""
