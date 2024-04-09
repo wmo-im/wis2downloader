@@ -28,7 +28,7 @@ Configuration is set via a `config.json` file with the following contents
     "topics": {},
     "download_dir": "default base download directory",
     "flask_host": "127.0.0.1",
-    "flask_port": 5000,
+    "flask_port": 8080,
     "download_workers": 1
 }
 ```
