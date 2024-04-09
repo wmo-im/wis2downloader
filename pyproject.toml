@@ -1,0 +1,32 @@
+[build-system]
+requires  = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wis2downloader"
+authors = [
+    {name = "Rory Burke"}
+]
+maintainers = [
+    {name = "Rory Burke"},
+    {name = "David I. Berry", email = "dberry@wmo.int"}
+]
+description = "Python package to manage subscriptions and downloads from the WIS2.0"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["WIS2.0", "MQTT", "subscribe", "download"]
+license = {file = "LICENSE"}
+dependencies = [
+    "certifi",
+    "flask",
+    "paho-mqtt",
+    "urllib3"
+]
+dynamic = ["version"]
+
+[project.scripts]
+
+wis2downloader = "wis2downloader:app.main"
+
+[tool.setuptools.dynamic]
+version = {attr = "wis2downloader.__version__"}
