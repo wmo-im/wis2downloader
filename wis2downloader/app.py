@@ -1,6 +1,5 @@
 import argparse
 import json
-import logging
 import os
 import threading
 
@@ -19,7 +18,7 @@ def create_app(subscriber: BaseSubscriber):
     """
     Starts the Flask app server and enables
     the addition or deletion of topics to the
-    concurrent susbcription.
+    concurrent subscription.
     It also spawns multiple download workers to
     handle the downloading and verification of the data.
 
@@ -93,17 +92,19 @@ def main():
     download_dir = config.get("download_dir", ".")
     num_workers = config.get("download_workers", 1)
 
-
-    # Finally flask options
+    # Flask options
     flask_host = config.get("flask_host", "127.0.0.1")
-    flask_port = config.get("flask_port", 5000) # find_open_port()) # port needs to be explicitly set otherwise their may be issues with the firewall.
+    flask_port = config.get("flask_port", 5000)
 
-    # Now set up the different threads (plus job Q)
+    # Finally if the user wants to save the logs to a file
+    save_logs = config.get("save_logs", False)
+
+    # Now set up the different threads (plus job queue)
     # 1) queue monitor
     # 2) download workers
     # 3) subscriber
 
-    # create the queue
+    # Create the queue
     jobQ = SimpleQueue()
 
     # Start the queue monitor
@@ -112,19 +113,16 @@ def main():
     )
     Q_monitor.start()
 
-    # start workers to process the jobs from the queue
+    # Start workers to process the jobs from the queue
     worker_threads = []
-    # basepath = "downloads"
     for idx in range(num_workers):
         worker = DownloadWorker(jobQ, download_dir)
         worker_threads.append(
-            threading.Thread(target=worker.start,
-                             daemon=True)
+            threading.Thread(target=worker.start, daemon=True)
         )
         worker_threads[idx].start()
 
-
-    # now create the MQTT subscriber
+    # Now create the MQTT subscriber
     subscriber = MQTTSubscriber(
         broker_url, broker_port, username, password, protocol, jobQ
     )
@@ -134,35 +132,43 @@ def main():
         target=subscriber.start, daemon=True)
     mqtt_thread.start()
 
-    # add default subscriptions
+    # Add default subscriptions
     for topic, target in topics.items():
         subscriber.add_subscription(topic, target)
 
-    # Now all background jobs / threads should be running start the flask
+    # Now all background jobs / threads should be running, start the flask
     # backend for managing the subscriptions
-
-    # Start the Flask app
     try:
         app = create_app(subscriber=subscriber)
     except Exception as e:
         LOGGER.error(f"Error creating Flask app: {e}")
 
     LOGGER.info(f"Flask host: {flask_host}, flask port: {flask_port}")
-    app.run(host=flask_host, port=flask_port, debug=True, use_reloader=False)
+    app.run(host=flask_host, port=flask_port,
+            debug=True, use_reloader=False)
+
+    # Provided the app.run() call is blocking, the following code will only
+    # be executed when the Flask app is stopped
 
     LOGGER.info("Shutting down")
+
+    # Stop the subscriber first
     subscriber.stop()
+
+    # Signal all other threads to stop
     shutdown.set()
-    # stop threads (this needs work !!!! ToDo)
+
     mqtt_thread.join()
     LOGGER.info("Subscriber thread stopped")
+
     LOGGER.info("Stopping queue monitor, this may take 60 seconds")
     Q_monitor.join()
     LOGGER.info("Queue monitor stopped")
+
     for worker in worker_threads:
         LOGGER.info("Shutting down worker threads")
+        # If download worker is blocked waiting for a job, send one
         if jobQ.size() == 0:
-            # download worker is blocked waiting for a job, send one.
             jobQ.enqueue({'shutdown': True})
         worker.join()
 

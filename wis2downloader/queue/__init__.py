@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import logging
 from queue import Queue
 import time
 
@@ -43,10 +42,11 @@ class BaseQueue(ABC):
 
 
 class QMonitor:
-    def __init__(self, _queue: BaseQueue, period:int = 60):
+    def __init__(self, _queue: BaseQueue, period: int = 60):
         while not shutdown.is_set():
             LOGGER.info(f"Queue size: {_queue.size()}")
             time.sleep(period)
+
 
 class SimpleQueue(BaseQueue):
     def __init__(self):
