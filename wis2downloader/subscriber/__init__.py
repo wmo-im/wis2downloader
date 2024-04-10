@@ -7,7 +7,7 @@ import ssl
 import paho.mqtt.client as mqtt
 
 from wis2downloader import shutdown
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
 
 

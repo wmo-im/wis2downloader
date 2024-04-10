@@ -3,7 +3,7 @@ from queue import Queue
 import time
 
 from wis2downloader import shutdown
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
 from wis2downloader.metrics import QUEUE_SIZE
 
 

@@ -9,11 +9,10 @@ from pathlib import Path
 import enum
 
 from wis2downloader import shutdown
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
-from wis2downloader.metrics import DOWNLOADED_BYTES, DOWNLOADED_FILES, FAILED_DOWNLOADS
-
-from typing import Callable
+from wis2downloader.metrics import (DOWNLOADED_BYTES, DOWNLOADED_FILES,
+                                    FAILED_DOWNLOADS)
 
 
 class BaseDownloader(ABC):
@@ -30,6 +29,11 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
+    def get_centre(self, job):
+        """Extract the centre id from the job"""
+        pass
+
+    @abstractmethod
     def get_hash_info(self, job):
         """Extract the hash value and function from the job
         to be used for verification later"""
@@ -42,7 +46,7 @@ class BaseDownloader(ABC):
 
     @abstractmethod
     def extract_filename(self, _url, job):
-        """Extract the filename from the download link"""
+        """Extract the filename and type from the download link"""
         pass
 
     @abstractmethod
@@ -108,8 +112,8 @@ class DownloadWorker(BaseDownloader):
         # Get the download link and update status
         _url, update = self.get_download_link(job)
 
-        # Extract the filename from the download link
-        filename = self.extract_filename(_url, job)
+        # Extract the filename and file type from the download link
+        filename, file_type = self.extract_filename(_url, job)
 
         if filename is None:
             LOGGER.info(f"Could not extract filename from {_url}")
@@ -124,6 +128,9 @@ class DownloadWorker(BaseDownloader):
             LOGGER.info(f"Skipping download of {filename}, already exists")
             return
 
+        # Get the centre id for download metrics
+        centre_id = self.get_centre(job)
+
         download_start = dt.now()
 
         # Download the file
@@ -133,13 +140,15 @@ class DownloadWorker(BaseDownloader):
             # Get the filesize in KB
             filesize = len(response.data)
             # Increment metrics
-            DOWNLOADED_BYTES.inc(filesize)
-            DOWNLOADED_FILES.inc()
+            DOWNLOADED_BYTES.labels(
+                centre_id=centre_id, file_type=file_type).inc(filesize)
+            DOWNLOADED_FILES.labels(
+                centre_id=centre_id, file_type=file_type).inc(1)
         except Exception as e:
             LOGGER.error(f"Error downloading {_url}")
             LOGGER.error(e)
             # Increment failed download counter
-            FAILED_DOWNLOADS.inc()
+            FAILED_DOWNLOADS.labels(centre_id=centre_id).inc(1)
             return
 
         if response is None:
@@ -152,12 +161,16 @@ class DownloadWorker(BaseDownloader):
         if not save_data:
             LOGGER.warning(f"Download {filename} failed verification, discarding")  # noqa
             # Increment failed download counter
-            FAILED_DOWNLOADS.inc()
+            FAILED_DOWNLOADS.labels(centre_id=centre_id).inc(1)
             return
 
         # Now save
         self.save_file(response.data, target, filename,
                        filesize, download_start)
+
+    def get_centre(self, job):
+        topic = job.get('topic')
+        return topic.split('/')[3]
 
     def get_hash_info(self, job):
         expected_hash = job.get('payload', {}).get(
@@ -194,7 +207,9 @@ class DownloadWorker(BaseDownloader):
             LOGGER.info(f"No download link found in job {job}")
             return None
         path = urlsplit(_url).path
-        return os.path.basename(path)
+        filename = os.path.basename(path)
+        file_type = os.path.splitext(filename)[1][1:]
+        return filename, file_type
 
     def validate_data(self, data, expected_hash, hash_function, expected_size):
         if None in (expected_hash, hash_function,

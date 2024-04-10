@@ -3,6 +3,7 @@ import json
 import os
 import threading
 from datetime import datetime as dt
+import re
 
 from flask import Flask, request, jsonify, Response
 from prometheus_client import generate_latest, REGISTRY
@@ -12,8 +13,6 @@ from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
 from wis2downloader.queue import SimpleQueue, QMonitor
 from wis2downloader.downloader import DownloadWorker
-from wis2downloader.metrics import *
-import re
 
 
 def validate_topic(topic) -> tuple:
@@ -93,7 +92,7 @@ def create_app(subscriber: BaseSubscriber):
     )
 
     @app.route('/metrics')
-    def metrics():
+    def expose_metrics():
         """
         Expose the Prometheus metrics to be scraped.
         """
