@@ -18,7 +18,7 @@ keywords = ["WIS2.0", "MQTT", "subscribe", "download"]
 license = {file = "LICENSE"}
 dependencies = [
     "certifi>=2024.2.2",
-    "flask",
+    "flask>=3.0.3",
     "paho-mqtt>=2.0.0 ",
     "urllib3>=2.2.1"
 ]
