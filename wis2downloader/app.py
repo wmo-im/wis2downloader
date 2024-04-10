@@ -4,13 +4,15 @@ import os
 import threading
 from datetime import datetime as dt
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
+from prometheus_client import generate_latest, REGISTRY
 
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
 from wis2downloader.queue import SimpleQueue, QMonitor
 from wis2downloader.downloader import DownloadWorker
+from wis2downloader.metrics import *
 import re
 
 
@@ -89,6 +91,13 @@ def create_app(subscriber: BaseSubscriber):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
+
+    @app.route('/metrics')
+    def metrics():
+        """
+        Expose the Prometheus metrics to be scraped.
+        """
+        return Response(generate_latest(REGISTRY), mimetype="text/plain")
 
     # Enable adding, deleting, or listing subscriptions
     @app.route('/add')

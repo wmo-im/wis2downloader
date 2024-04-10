@@ -11,6 +11,7 @@ import enum
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.queue import BaseQueue
+from wis2downloader.metrics import DOWNLOADED_BYTES, DOWNLOADED_FILES, FAILED_DOWNLOADS
 
 from typing import Callable
 
@@ -131,9 +132,15 @@ class DownloadWorker(BaseDownloader):
             response = self.http.request('GET', _url)
             # Get the filesize in KB
             filesize = len(response.data)
+            # Increment metrics
+            DOWNLOADED_BYTES.inc(filesize)
+            DOWNLOADED_FILES.inc()
         except Exception as e:
             LOGGER.error(f"Error downloading {_url}")
             LOGGER.error(e)
+            # Increment failed download counter
+            FAILED_DOWNLOADS.inc()
+            return
 
         if response is None:
             return
@@ -144,6 +151,8 @@ class DownloadWorker(BaseDownloader):
 
         if not save_data:
             LOGGER.warning(f"Download {filename} failed verification, discarding")  # noqa
+            # Increment failed download counter
+            FAILED_DOWNLOADS.inc()
             return
 
         # Now save
@@ -188,12 +197,15 @@ class DownloadWorker(BaseDownloader):
         return os.path.basename(path)
 
     def validate_data(self, data, expected_hash, hash_function, expected_size):
-        if None not in (expected_hash, hash_function,
-                        hash_function):
-            hash_value = hash_function(data).digest()
-            hash_value = base64.b64encode(hash_value).decode()
-            if (hash_value != expected_hash) or (len(data) != expected_size):
-                return False
+        if None in (expected_hash, hash_function,
+                    hash_function):
+            return True
+
+        hash_value = hash_function(data).digest()
+        hash_value = base64.b64encode(hash_value).decode()
+        if (hash_value != expected_hash) or (len(data) != expected_size):
+            return False
+
         return True
 
     def save_file(self, data, target, filename, filesize, download_start):

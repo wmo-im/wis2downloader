@@ -4,6 +4,7 @@ import time
 
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.metrics import QUEUE_SIZE
 
 
 class BaseQueue(ABC):
@@ -34,6 +35,11 @@ class BaseQueue(ABC):
         pass
 
     @abstractmethod
+    def toggle_active(self):
+        """Toggle the active state of the queue"""
+        pass
+
+    @abstractmethod
     def is_active(self) -> bool:
         """
         Function that returns whether the queue is active
@@ -55,8 +61,12 @@ class SimpleQueue(BaseQueue):
 
     def enqueue(self, item):
         self._queue.put(item)
+        # Note queue size for the metric
+        QUEUE_SIZE.set(self.size())
 
     def dequeue(self):
+        # Note queue size for the metric
+        QUEUE_SIZE.set(self.size())
         return self._queue.get()
 
     def size(self) -> int:
@@ -68,10 +78,11 @@ class SimpleQueue(BaseQueue):
     def is_empty(self) -> bool:
         return self._queue.empty()
 
-    # Todo - always active, change to use flag that can be toggled
+    def toggle_active(self):
+        self.active = not self.active
+
     def is_active(self):
         return self.active
-
 
 
 class RedisQueue(BaseQueue):

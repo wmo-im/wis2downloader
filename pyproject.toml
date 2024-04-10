@@ -20,7 +20,8 @@ dependencies = [
     "certifi>=2024.2.2",
     "flask>=3.0.3",
     "paho-mqtt>=2.0.0 ",
-    "urllib3>=2.2.1"
+    "urllib3>=2.2.1",
+    "prometheus_client>=0.20.0",
 ]
 dynamic = ["version"]
 
