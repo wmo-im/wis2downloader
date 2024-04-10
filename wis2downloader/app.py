@@ -4,7 +4,7 @@ import os
 import threading
 from datetime import datetime as dt
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
@@ -14,7 +14,7 @@ from wis2downloader.downloader import DownloadWorker
 import re
 
 
-def validate_topic(topic) -> bool:
+def validate_topic(topic) -> tuple:
     """
     Validate the topic for special characters, backslashes,
     or escape codes.
@@ -25,6 +25,12 @@ def validate_topic(topic) -> bool:
     Returns:
         bool: True if the topic is valid, False otherwise.
     """
+    no_topic_error = "No topic was provided. Please provide a valid topic"
+
+    if topic is None or len(topic) == 0:
+        LOGGER.error(no_topic_error)
+        return False, no_topic_error
+
     # Pattern for characters not allowed in topic (special characters except #)
     bad_topic_chars = re.compile('[@_!$%^&*()<>?|}{~:]')
 
@@ -34,9 +40,9 @@ def validate_topic(topic) -> bool:
             or '\\' in topic or '\n' in topic
             or '\t' in topic or '\r' in topic):
         LOGGER.error(bad_topic_error)
-        return False
+        return False, bad_topic_error
 
-    return True
+    return True, ""
 
 
 def clean_target(target) -> str:
@@ -88,9 +94,10 @@ def create_app(subscriber: BaseSubscriber):
     @app.route('/add')
     def add_subscription():
         topic = request.args.get('topic')
-        is_topic_valid = validate_topic(topic)
+        is_topic_valid, msg = validate_topic(topic)
+
         if not is_topic_valid:
-            return
+            return jsonify({"error": msg}), 400
 
         target = request.args.get('target')
         if target is None:
@@ -103,10 +110,10 @@ def create_app(subscriber: BaseSubscriber):
     @app.route('/delete')
     def delete_subscription():
         topic = request.args.get('topic')
-        is_topic_valid = validate_topic(topic)
+        is_topic_valid, msg = validate_topic(topic)
 
         if not is_topic_valid:
-            return
+            return jsonify({"error": msg}), 400
 
         return subscriber.delete_subscription(topic)
 
@@ -203,7 +210,7 @@ def main():
 
     # Add default subscriptions
     for topic, target in topics.items():
-        is_topic_valid = validate_topic(topic)
+        is_topic_valid, _ = validate_topic(topic)
         if not is_topic_valid:
             continue
 

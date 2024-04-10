@@ -6,6 +6,7 @@ import base64
 import os
 from datetime import datetime as dt
 from pathlib import Path
+import enum
 
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
@@ -44,9 +45,9 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
-    def validate_hash(self, data, expected_hash, hash_function):
-        """Validate the hash of the downloaded data against
-        the expected hash value"""
+    def validate_data(self, data, expected_hash, hash_function):
+        """Validate the hash and size of the downloaded data against
+        the expected values"""
         pass
 
     @abstractmethod
@@ -63,6 +64,15 @@ def get_todays_date():
     mm = f"{today.month:02}"
     dd = f"{today.day:02}"
     return yyyy, mm, dd
+
+
+class VerificationMethods(enum.Enum):
+    sha256 = 'sha256'
+    sha384 = 'sha384'
+    sha512 = 'sha512'
+    sha3_256 = 'sha3_256'
+    sha3_384 = 'sha3_384'
+    sha3_512 = 'sha3_512'
 
 
 class DownloadWorker(BaseDownloader):
@@ -90,8 +100,9 @@ class DownloadWorker(BaseDownloader):
         # Add target to output directory
         output_dir = output_dir / job.get("target", ".")
 
-        # Get hash information from the job for verification later
+        # Get information about the job for verification later
         expected_hash, hash_function = self.get_hash_info(job)
+        expected_size = job.get('payload', {}).get('content', {}).get('size')
 
         # Get the download link and update status
         _url, update = self.get_download_link(job)
@@ -128,8 +139,8 @@ class DownloadWorker(BaseDownloader):
             return
 
         # Use the hash function to determine whether to save the data
-        save_data = self.validate_hash(
-            response.data, expected_hash, hash_function)
+        save_data = self.validate_data(
+            response.data, expected_hash, hash_function, expected_size)
 
         if not save_data:
             LOGGER.warning(f"Download {filename} failed verification, discarding")  # noqa
@@ -144,9 +155,13 @@ class DownloadWorker(BaseDownloader):
             'properties', {}).get('integrity', {}).get('hash')
         hash_method = job.get('payload', {}).get(
             'properties', {}).get('integrity', {}).get('method')
+
         hash_function = None
-        if hash_method is not None:
-            hash_function = getattr(hashlib, hash_method, None)
+
+        # Check if hash method is known using our enumumeration of hash methods
+        if hash_method in VerificationMethods._member_names_:
+            method = VerificationMethods[hash_method].value
+            hash_function = hashlib.new(method)
 
         return expected_hash, hash_function
 
@@ -172,12 +187,12 @@ class DownloadWorker(BaseDownloader):
         path = urlsplit(_url).path
         return os.path.basename(path)
 
-    def validate_hash(self, data, expected_hash, hash_function):
+    def validate_data(self, data, expected_hash, hash_function, expected_size):
         if None not in (expected_hash, hash_function,
                         hash_function):
             hash_value = hash_function(data).digest()
             hash_value = base64.b64encode(hash_value).decode()
-            if hash_value != expected_hash:
+            if (hash_value != expected_hash) or (len(data) != expected_size):
                 return False
         return True
 
