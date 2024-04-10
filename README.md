@@ -68,3 +68,10 @@ curl http://localhost:8080/list
 ```
 
 The list of active subscriptions should be returned as a json object.
+
+### Viewing download metrics
+Prometheus metrics for the downloader are found via a GET request to `./metrics`, e.g.:
+
+```bash
+curl http://localhost:8080/metrics
+```
