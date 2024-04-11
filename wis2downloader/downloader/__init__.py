@@ -116,7 +116,6 @@ class DownloadWorker(BaseDownloader):
         filename, file_type = self.extract_filename(_url, job)
 
         if filename is None:
-            LOGGER.info(f"Could not extract filename from {_url}")
             return
 
         target = output_dir / filename
