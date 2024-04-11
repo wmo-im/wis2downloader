@@ -40,17 +40,18 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
-    def get_download_link(self, job):
-        """Extract the download link from the job"""
+    def get_links(self, job):
+        """Extract the download url, update status, and
+        file type from the job links"""
         pass
 
     @abstractmethod
     def extract_filename(self, _url, job):
-        """Extract the filename and type from the download link"""
+        """Extract the filename and extension from the download link"""
         pass
 
     @abstractmethod
-    def validate_data(self, data, expected_hash, hash_function):
+    def validate_data(self, data, expected_hash, hash_function, expected_size):
         """Validate the hash and size of the downloaded data against
         the expected values"""
         pass
@@ -109,14 +110,19 @@ class DownloadWorker(BaseDownloader):
         expected_hash, hash_function = self.get_hash_info(job)
         expected_size = job.get('payload', {}).get('content', {}).get('size')
 
-        # Get the download link and update status
-        _url, update = self.get_download_link(job)
+        # Get the download url, update status, and file type from the job links
+        _url, update, file_type = self.get_links(job)
 
-        # Extract the filename and file type from the download link
-        filename, file_type = self.extract_filename(_url, job)
-
-        if filename is None:
+        if _url is None:
+            LOGGER.info(f"No download link found in job {job}")
             return
+
+        # Extract the filename and filename ending from the download link
+        filename, filename_ext = self.extract_filename(_url)
+
+        # If the file type is not in the links, use the filename extension
+        if file_type is None:
+            file_type = filename_ext
 
         target = output_dir / filename
         # Create parent dir if it doesn't exist
@@ -189,7 +195,7 @@ class DownloadWorker(BaseDownloader):
 
         return expected_hash, hash_function
 
-    def get_download_link(self, job) -> tuple:
+    def get_links(self, job) -> tuple:
         links = job.get('payload', {}).get('links', [])
         _url = None
         update = False
@@ -200,19 +206,20 @@ class DownloadWorker(BaseDownloader):
                 break
             elif link.get('rel') == 'canonical':
                 _url = link.get('href')
+                app_type = link.get('type')
+                # Remove 'application/' prefix from type to get file type
+                file_type = app_type.split('/')[1] if app_type else None
                 break
 
-        return _url, update
+        return _url, update, file_type
 
-    def extract_filename(self, _url, job) -> tuple:
-        if _url is None:
-            LOGGER.info(f"No download link found in job {job}")
-            return None, None
+    def extract_filename(self, _url) -> tuple:
         path = urlsplit(_url).path
         filename = os.path.basename(path)
-        file_type = os.path.splitext(filename)[1][1:]
 
-        return filename, file_type
+        filename_ext = os.path.splitext(filename)[1][1:]
+
+        return filename, filename_ext
 
     def validate_data(self, data, expected_hash,
                       hash_function, expected_size) -> bool:
