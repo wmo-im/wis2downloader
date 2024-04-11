@@ -29,8 +29,8 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
-    def get_centre(self, job):
-        """Extract the centre id from the job"""
+    def get_topic_and_centre(self, job):
+        """Extract the topic and centre id from the job"""
         pass
 
     @abstractmethod
@@ -127,8 +127,8 @@ class DownloadWorker(BaseDownloader):
             LOGGER.info(f"Skipping download of {filename}, already exists")
             return
 
-        # Get the centre id for download metrics
-        centre_id = self.get_centre(job)
+        # Get the topic and centre id for download metrics
+        topic, centre_id = self.get_topic_and_centre(job)
 
         download_start = dt.now()
 
@@ -142,7 +142,7 @@ class DownloadWorker(BaseDownloader):
             LOGGER.error(f"Error downloading {_url}")
             LOGGER.error(e)
             # Increment failed download counter
-            FAILED_DOWNLOADS.labels(centre_id=centre_id).inc(1)
+            FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
         if response is None:
@@ -155,21 +155,24 @@ class DownloadWorker(BaseDownloader):
         if not save_data:
             LOGGER.warning(f"Download {filename} failed verification, discarding")  # noqa
             # Increment failed download counter
-            FAILED_DOWNLOADS.labels(centre_id=centre_id).inc(1)
+            FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
         # Now save
         self.save_file(response.data, target, filename,
                        filesize, download_start)
+
         # Increment metrics
         DOWNLOADED_BYTES.labels(
-            centre_id=centre_id, file_type=file_type).inc(filesize)
+            topic=topic, centre_id=centre_id,
+            file_type=file_type).inc(filesize)
         DOWNLOADED_FILES.labels(
-            centre_id=centre_id, file_type=file_type).inc(1)
+            topic=topic, centre_id=centre_id,
+            file_type=file_type).inc(1)
 
-    def get_centre(self, job) -> tuple:
+    def get_topic_and_centre(self, job) -> tuple:
         topic = job.get('topic')
-        return topic.split('/')[3]
+        return topic, topic.split('/')[3]
 
     def get_hash_info(self, job):
         expected_hash = job.get('payload', {}).get(
@@ -208,6 +211,7 @@ class DownloadWorker(BaseDownloader):
         path = urlsplit(_url).path
         filename = os.path.basename(path)
         file_type = os.path.splitext(filename)[1][1:]
+
         return filename, file_type
 
     def validate_data(self, data, expected_hash,

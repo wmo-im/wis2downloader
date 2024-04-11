@@ -9,6 +9,7 @@ import paho.mqtt.client as mqtt
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
+from wis2downloader.metrics import TOPIC_STATUS
 
 
 class BaseSubscriber(ABC):
@@ -142,6 +143,8 @@ class MQTTSubscriber(BaseSubscriber):
             'pattern': topic.replace("+", "*").replace("#", "*")
         }
         LOGGER.info(f"Subscribing to {topic}")
+        # Set topic status to subscribed
+        TOPIC_STATUS.labels(topic=topic).set(1)
         return self.active_subscriptions
 
     def delete_subscription(self, topic: str):
@@ -149,6 +152,8 @@ class MQTTSubscriber(BaseSubscriber):
             self.client.unsubscribe(topic)
             del self.active_subscriptions[topic]
             LOGGER.info(f"Unsubscribing from {topic}")
+            # Set topic status to unsubscribed
+            TOPIC_STATUS.labels(topic=topic).set(0)
         else:
             LOGGER.info(f"Topic {topic} not found in active subscriptions")
         return self.active_subscriptions

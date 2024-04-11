@@ -5,9 +5,13 @@ QUEUE_SIZE = Gauge(
     'queue_size', 'Current size of the job queue')
 DOWNLOADED_BYTES = Counter(
     'downloaded_bytes', 'Total number of downloaded bytes',
-    ['centre_id', 'file_type'])
+    ['topic', 'centre_id', 'file_type'])
 DOWNLOADED_FILES = Counter(
     'downloaded_files', 'Total number of downloaded files',
-    ['centre_id', 'file_type'])
+    ['topic', 'centre_id', 'file_type'])
 FAILED_DOWNLOADS = Counter(
-    'failed_downloads', 'Total number of failed downloads', ['centre_id'])
+    'failed_downloads', 'Total number of failed downloads',
+    ['topic', 'centre_id'])
+TOPIC_STATUS = Gauge(
+    'topic_subscription_status', 'Subscription status of a given topic',
+    ['topic'])
