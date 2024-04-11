@@ -46,7 +46,7 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
-    def extract_filename(self, _url, job):
+    def extract_filename(self, _url):
         """Extract the filename and extension from the download link"""
         pass
 
@@ -133,9 +133,20 @@ class DownloadWorker(BaseDownloader):
             LOGGER.info(f"Skipping download of {filename}, already exists")
             return
 
-        # Get the topic and centre id for download metrics
+        # Get information needed for download metric labels
         topic, centre_id = self.get_topic_and_centre(job)
 
+        # Standardise the file type label
+        all_type_labels = ['bufr', 'grib', 'json', 'xml', 'png']
+        same_type_mapping = {'bufr4': 'bufr', 'grib2': 'grib'}
+
+        if file_type not in all_type_labels:
+            file_type_label = same_type_mapping.get(file_type)
+
+            if file_type_label is None:
+                file_type_label = 'other'
+
+        # Start timer of download time to be logged later
         download_start = dt.now()
 
         # Download the file
@@ -171,10 +182,10 @@ class DownloadWorker(BaseDownloader):
         # Increment metrics
         DOWNLOADED_BYTES.labels(
             topic=topic, centre_id=centre_id,
-            file_type=file_type).inc(filesize)
+            file_type=file_type_label).inc(filesize)
         DOWNLOADED_FILES.labels(
             topic=topic, centre_id=centre_id,
-            file_type=file_type).inc(1)
+            file_type=file_type_label).inc(1)
 
     def get_topic_and_centre(self, job) -> tuple:
         topic = job.get('topic')
@@ -206,9 +217,11 @@ class DownloadWorker(BaseDownloader):
                 break
             elif link.get('rel') == 'canonical':
                 _url = link.get('href')
+                file_type = None
                 app_type = link.get('type')
-                # Remove 'application/' prefix from type to get file type
-                file_type = app_type.split('/')[1] if app_type else None
+                if app_type:
+                    # Remove '.../' prefix and, if present, 'x-' prefix
+                    file_type = app_type.split('/')[1].replace('x-', '')
                 break
 
         return _url, update, file_type
