@@ -138,11 +138,6 @@ class DownloadWorker(BaseDownloader):
             response = self.http.request('GET', _url)
             # Get the filesize in KB
             filesize = len(response.data)
-            # Increment metrics
-            DOWNLOADED_BYTES.labels(
-                centre_id=centre_id, file_type=file_type).inc(filesize)
-            DOWNLOADED_FILES.labels(
-                centre_id=centre_id, file_type=file_type).inc(1)
         except Exception as e:
             LOGGER.error(f"Error downloading {_url}")
             LOGGER.error(e)
@@ -166,6 +161,11 @@ class DownloadWorker(BaseDownloader):
         # Now save
         self.save_file(response.data, target, filename,
                        filesize, download_start)
+        # Increment metrics
+        DOWNLOADED_BYTES.labels(
+            centre_id=centre_id, file_type=file_type).inc(filesize)
+        DOWNLOADED_FILES.labels(
+            centre_id=centre_id, file_type=file_type).inc(1)
 
     def get_centre(self, job) -> tuple:
         topic = job.get('topic')
