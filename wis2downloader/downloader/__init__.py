@@ -86,7 +86,7 @@ class DownloadWorker(BaseDownloader):
         self.queue = queue
         self.basepath = Path(basepath)
 
-    def start(self):
+    def start(self) -> None:
         LOGGER.info("Starting download worker")
         while not shutdown.is_set():
             # First get the job from the queue
@@ -98,7 +98,7 @@ class DownloadWorker(BaseDownloader):
 
             self.queue.task_done()
 
-    def process_job(self, job):
+    def process_job(self, job) -> None:
         yyyy, mm, dd = get_todays_date()
         output_dir = self.basepath / yyyy / mm / dd
 
@@ -168,7 +168,7 @@ class DownloadWorker(BaseDownloader):
         self.save_file(response.data, target, filename,
                        filesize, download_start)
 
-    def get_centre(self, job):
+    def get_centre(self, job) -> tuple:
         topic = job.get('topic')
         return topic.split('/')[3]
 
@@ -187,7 +187,7 @@ class DownloadWorker(BaseDownloader):
 
         return expected_hash, hash_function
 
-    def get_download_link(self, job):
+    def get_download_link(self, job) -> tuple:
         links = job.get('payload', {}).get('links', [])
         _url = None
         update = False
@@ -202,16 +202,17 @@ class DownloadWorker(BaseDownloader):
 
         return _url, update
 
-    def extract_filename(self, _url, job):
+    def extract_filename(self, _url, job) -> tuple:
         if _url is None:
             LOGGER.info(f"No download link found in job {job}")
-            return None
+            return None, None
         path = urlsplit(_url).path
         filename = os.path.basename(path)
         file_type = os.path.splitext(filename)[1][1:]
         return filename, file_type
 
-    def validate_data(self, data, expected_hash, hash_function, expected_size):
+    def validate_data(self, data, expected_hash,
+                      hash_function, expected_size) -> bool:
         if None in (expected_hash, hash_function,
                     hash_function):
             return True
@@ -223,7 +224,8 @@ class DownloadWorker(BaseDownloader):
 
         return True
 
-    def save_file(self, data, target, filename, filesize, download_start):
+    def save_file(self, data, target, filename, filesize,
+                  download_start) -> None:
         try:
             target.write_bytes(data)
             download_end = dt.now()
