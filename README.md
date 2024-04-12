@@ -28,7 +28,7 @@ Configuration is set via a `config.json` file with the following contents
     "topics": {"initial topic 1": "associated download folder", ...},
     "download_dir": "default base download directory",
     "flask_host": "127.0.0.1",
-    "flask_port": 5000,
+    "flask_port": 8080,
     "download_workers": 1,
     "save_logs": false,
     "log_dir": "default base directory for logs to be saved"
