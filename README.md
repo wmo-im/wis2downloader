@@ -1,14 +1,14 @@
 # wis2-downloader
 
-Note: previous version of the downloader, including frontend, has been moved to: https://github.com/wmo-im/wis2-downloader-gui
+Note: the previous version of the downloader, including the frontend, has been moved to: https://github.com/wmo-im/wis2-downloader-gui
 
 ## Description
 
-Flask based python application to subscribe and download data from the WIS2.0.
+Flask based Python application to subscribe and download data from the WIS2.0 network.
 
 ## Usage
 
-### Isntallation
+### Installation
 
 ```bash
 pip install https://github.com/wmo-im/wis2-downloader/archive/main.zip
@@ -25,18 +25,20 @@ Configuration is set via a `config.json` file with the following contents
     "username": "username to use on the global broker, default everyone",
     "password": "password to use on the global broker, default everyone",
     "protocol": "transport protocol to use, either tcp or websockets",
-    "topics": {},
+    "topics": {"initial topic 1": "associated download folder", ...},
     "download_dir": "default base download directory",
     "flask_host": "127.0.0.1",
     "flask_port": 5000,
-    "download_workers": 1
+    "download_workers": 1,
+    "save_logs": false,
+    "log_dir": "default base directory for logs to be saved"
 }
 ```
 
 ### Running
 
 ```
-wis2downloader --config config.json
+wis2downloader --config <path to configuration file>
 ```
 
 ### Adding subscriptions
