@@ -77,3 +77,11 @@ Prometheus metrics for the downloader are found via a GET request to `./metrics`
 ```bash
 curl http://localhost:8080/metrics
 ```
+
+usage: wis2downloader [-h] [--config CONFIG]
+
+WIS2 Downloader app configuration
+
+options:
+  -h, --help       show this help message and exit
+  --config CONFIG  Path to the Flask app configuration file

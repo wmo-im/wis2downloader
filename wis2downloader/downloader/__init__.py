@@ -211,6 +211,7 @@ class DownloadWorker(BaseDownloader):
         links = job.get('payload', {}).get('links', [])
         _url = None
         update = False
+        file_type = None
         for link in links:
             if link.get('rel') == 'update':
                 _url = link.get('href')
@@ -218,7 +219,6 @@ class DownloadWorker(BaseDownloader):
                 break
             elif link.get('rel') == 'canonical':
                 _url = link.get('href')
-                file_type = None
                 app_type = link.get('type')
                 if app_type:
                     # Remove '.../' prefix and, if present, 'x-' prefix
