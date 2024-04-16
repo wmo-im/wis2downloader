@@ -6,6 +6,7 @@ from datetime import datetime as dt
 import re
 
 from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
 from prometheus_client import generate_latest, REGISTRY
 
 from wis2downloader import shutdown
@@ -71,9 +72,8 @@ def clean_target(target) -> str:
 
 def create_app(subscriber: BaseSubscriber):
     """
-    Starts the Flask app server and enables
-    the addition or deletion of topics to the
-    concurrent subscription.
+    Starts the Flask app server (with CORS enabled) and enables
+    the addition or deletion of topics to the concurrent subscription.
     It also spawns multiple download workers to
     handle the downloading and verification of the data.
 
@@ -86,6 +86,7 @@ def create_app(subscriber: BaseSubscriber):
 
     # Create the Flask app
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
