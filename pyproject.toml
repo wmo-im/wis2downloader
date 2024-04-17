@@ -22,6 +22,7 @@ dependencies = [
     "paho-mqtt>=2.0.0 ",
     "urllib3>=2.2.1",
     "prometheus_client>=0.20.0",
+    "pywis-topics>=0.3.2"
 ]
 dynamic = ["version"]
 

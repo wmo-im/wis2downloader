@@ -9,6 +9,8 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from prometheus_client import generate_latest, REGISTRY
 
+from pywis_topics.topics import TopicHierarchy
+from pywis_topics.bundle import sync_bundle
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
@@ -33,14 +35,14 @@ def validate_topic(topic) -> tuple:
         LOGGER.error(no_topic_error)
         return False, no_topic_error
 
-    # Pattern for characters not allowed in topic (special characters except #)
-    bad_topic_chars = re.compile('[@_!$%^&*()<>?|}{~:]')
+    # Use pywis-topics to validate the topic: strict=False allows for wildcards
+    sync_bundle()
+    th = TopicHierarchy()
+    is_valid = th.validate(topic, strict=False)
 
     bad_topic_error = "Invalid topic. It should not contain special characters, backslashes, or escape codes"  # noqa
 
-    if (bad_topic_chars.search(topic) is not None
-            or '\\' in topic or '\n' in topic
-            or '\t' in topic or '\r' in topic):
+    if not is_valid:
         LOGGER.error(bad_topic_error)
         return False, bad_topic_error
 
@@ -67,8 +69,7 @@ def clean_target(target) -> str:
     bad_matches = set(bad_target_chars.findall(target))
 
     if bad_matches:
-        char_matches_str = ', '.join(bad_matches)
-        LOGGER.warning(f"Target contains invalid characters ({char_matches_str}), these will be automatically removed")  # noqa
+        LOGGER.warning("Target contains invalid characters (e.g. $, %, ^, &), these will be automatically removed")  # noqa
         return bad_target_chars.sub('', target)
 
     return target
