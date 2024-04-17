@@ -57,13 +57,17 @@ def clean_target(target) -> str:
     Returns:
         str: The sanitised target path.
     """
-    # Pattern for special characters
-    bad_target_chars = re.compile('[@!#$%^&*()<>?|}{~:]')
+    # Allowed characters
+    allowed_chars = "A-Za-z0-9/_-"
 
-    if bad_target_chars.search(target) is not None:
-        # Get unique character offenses to display in warning
-        char_matches = set(bad_target_chars.findall(target))
-        char_matches_str = ', '.join(char_matches)
+    # Bad characters are the negation of the allowed characters
+    bad_target_chars = re.compile(f'[^{allowed_chars}]')
+
+    # Get unique character offenses
+    bad_matches = set(bad_target_chars.findall(target))
+
+    if bad_matches:
+        char_matches_str = ', '.join(bad_matches)
         LOGGER.warning(f"Target contains invalid characters ({char_matches_str}), these will be automatically removed")  # noqa
         return bad_target_chars.sub('', target)
 
