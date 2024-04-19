@@ -136,16 +136,14 @@ class DownloadWorker(BaseDownloader):
         # Get information needed for download metric labels
         topic, centre_id = self.get_topic_and_centre(job)
 
-        # Standardise the file type label
+        # Standardise the file type label, defaulting to 'other'
         all_type_labels = ['bufr', 'grib', 'json', 'xml', 'png']
-        same_type_mapping = {'bufr4': 'bufr', 'grib2': 'grib'}
-        file_type_label = file_type
+        file_type_label = 'other'
 
-        if file_type not in all_type_labels:
-            file_type_label = same_type_mapping.get(file_type)
-
-            if file_type_label is None:
-                file_type_label = 'other'
+        for label in all_type_labels:
+            if label in file_type:
+                file_type_label = label
+                break
 
         # Start timer of download time to be logged later
         download_start = dt.now()
