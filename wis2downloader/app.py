@@ -20,14 +20,13 @@ from wis2downloader.downloader import DownloadWorker
 
 def validate_topic(topic) -> tuple:
     """
-    Validate the topic for special characters, backslashes,
-    or escape codes.
+    Validates the topic using pywis-topics.
 
     Args:
         topic (str): The topic to validate.
 
     Returns:
-        bool: True if the topic is valid, False otherwise.
+        tuple (bool, str): The validation result and an error message.
     """
     no_topic_error = "No topic was provided. Please provide a valid topic"
 
@@ -49,30 +48,33 @@ def validate_topic(topic) -> tuple:
     return True, ""
 
 
-def clean_target(target) -> str:
+def validate_target(target) -> tuple:
     """
-    Cleans the target path by removing special characters.
+    Validates the target path by searching for any non-whitelisted characters.
 
     Args:
         target (str): The target path to validate.
 
     Returns:
-        str: The sanitised target path.
+        tuple (bool, str): The validation result and an error message.
     """
+    # Early return for topic hierarchy target
+    if target == "$TOPIC":
+        return True, ""
+
     # Allowed characters
     allowed_chars = "A-Za-z0-9/_-"
 
     # Bad characters are the negation of the allowed characters
-    bad_target_chars = re.compile(f'[^{allowed_chars}]')
+    bad_chars = re.compile(f'[^{allowed_chars}]')
 
-    # Get unique character offenses
-    bad_matches = set(bad_target_chars.findall(target))
+    bad_target_error = "Invalid target"
 
-    if bad_matches:
-        LOGGER.warning("Target contains invalid characters (e.g. $, %, ^, &), these will be automatically removed")  # noqa
-        return bad_target_chars.sub('', target)
+    if target.match(bad_chars):
+        LOGGER.warning("Invalid target passed to add_subscription")
+        return False, bad_target_error
 
-    return target
+    return True, ""
 
 
 def create_app(subscriber: BaseSubscriber):
@@ -107,22 +109,28 @@ def create_app(subscriber: BaseSubscriber):
     # Enable adding, deleting, or listing subscriptions
     @app.route('/add')
     def add_subscription():
+        # Topic validation
         topic = request.args.get('topic')
         is_topic_valid, msg = validate_topic(topic)
 
         if not is_topic_valid:
             return jsonify({"error": msg}), 400
 
+        # Target validation
         target = request.args.get('target')
-        if target is None:
+        if target in (None, "$TOPIC"):
             target = "$TOPIC"
-        else:
-            clean_target(target)
+
+        is_target_valid, msg = validate_target(target)
+
+        if not is_target_valid:
+            return jsonify({"error": msg}), 400
 
         return subscriber.add_subscription(topic, target)
 
     @app.route('/delete')
     def delete_subscription():
+        # Topic validation
         topic = request.args.get('topic')
         is_topic_valid, msg = validate_topic(topic)
 
@@ -229,7 +237,7 @@ def main():
             continue
 
         # Remove special characters from target
-        target = clean_target(target)
+        target = validate_target(target)
 
         subscriber.add_subscription(topic, target)
 

@@ -129,7 +129,8 @@ class DownloadWorker(BaseDownloader):
         target.parent.mkdir(parents=True, exist_ok=True)
 
         # Only download if file doesn't exist or is an update
-        if (target.is_file()) and (not update):
+        is_duplicate = target.is_file() and not update
+        if is_duplicate:
             LOGGER.info(f"Skipping download of {filename}, already exists")
             return
 
