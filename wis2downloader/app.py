@@ -63,14 +63,11 @@ def validate_target(target) -> tuple:
         return True, ""
 
     # Allowed characters
-    allowed_chars = "A-Za-z0-9/_-"
-
-    # Bad characters are the negation of the allowed characters
-    bad_chars = re.compile(f'[^{allowed_chars}]')
+    allowed_chars = re.compile("^[A-Za-z0-9/_-]+$")
 
     bad_target_error = "Invalid target"
 
-    if target.match(bad_chars):
+    if not allowed_chars.match(target):
         LOGGER.warning("Invalid target passed to add_subscription")
         return False, bad_target_error
 
