@@ -1,25 +1,86 @@
 import argparse
 import json
-import logging
 import os
 import threading
+from datetime import datetime as dt
+import re
 
-from flask import Flask, request
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
+from prometheus_client import generate_latest, REGISTRY
 
+from pywis_topics.topics import TopicHierarchy
+from pywis_topics.bundle import sync_bundle
 from wis2downloader import shutdown
 from wis2downloader.log import LOGGER, setup_logger
 from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
 from wis2downloader.queue import SimpleQueue, QMonitor
 from wis2downloader.downloader import DownloadWorker
 
-setup_logger("INFO")
+
+def validate_topic(topic) -> tuple:
+    """
+    Validates the topic using pywis-topics.
+
+    Args:
+        topic (str): The topic to validate.
+
+    Returns:
+        tuple (bool, str): The validation result and an error message.
+    """
+    no_topic_error = "No topic was provided. Please provide a valid topic"
+
+    if topic is None or len(topic) == 0:
+        LOGGER.error(no_topic_error)
+        return False, no_topic_error
+
+    # Use pywis-topics to validate the topic: strict=False allows for wildcards
+    sync_bundle()
+    th = TopicHierarchy()
+    is_valid = th.validate(topic, strict=False)
+
+    bad_topic_error = "Invalid topic. It should not contain special characters, backslashes, or escape codes"  # noqa
+
+    if not is_valid:
+        LOGGER.error(bad_topic_error)
+        return False, bad_topic_error
+
+    return True, ""
+
+
+def validate_target(target) -> tuple:
+    """
+    Validates the target path by searching for any non-whitelisted characters.
+
+    Args:
+        target (str): The target path to validate.
+
+    Returns:
+        tuple (bool, str): The validation result and an error message.
+    """
+    # Early return for topic hierarchy target
+    if target == "$TOPIC":
+        return True, ""
+
+    # Allowed characters
+    allowed_chars = "A-Za-z0-9/_-"
+
+    # Bad characters are the negation of the allowed characters
+    bad_chars = re.compile(f'[^{allowed_chars}]')
+
+    bad_target_error = "Invalid target"
+
+    if bad_chars.search(target):
+        LOGGER.warning("Invalid target passed to add_subscription")
+        return False, bad_target_error
+
+    return True, ""
 
 
 def create_app(subscriber: BaseSubscriber):
     """
-    Starts the Flask app server and enables
-    the addition or deletion of topics to the
-    concurrent susbcription.
+    Starts the Flask app server (with CORS enabled) and enables
+    the addition or deletion of topics to the concurrent subscription.
     It also spawns multiple download workers to
     handle the downloading and verification of the data.
 
@@ -32,25 +93,50 @@ def create_app(subscriber: BaseSubscriber):
 
     # Create the Flask app
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
 
+    @app.route('/metrics')
+    def expose_metrics():
+        """
+        Expose the Prometheus metrics to be scraped.
+        """
+        return Response(generate_latest(REGISTRY), mimetype="text/plain")
+
     # Enable adding, deleting, or listing subscriptions
     @app.route('/add')
     def add_subscription():
-        # Todo - validation of args
+        # Topic validation
         topic = request.args.get('topic')
+        is_topic_valid, msg = validate_topic(topic)
+
+        if not is_topic_valid:
+            return jsonify({"error": msg}), 400
+
+        # Target validation
         target = request.args.get('target')
-        if target is None:
+        if target in (None, "$TOPIC"):
             target = "$TOPIC"
+
+        is_target_valid, msg = validate_target(target)
+
+        if not is_target_valid:
+            return jsonify({"error": msg}), 400
+
         return subscriber.add_subscription(topic, target)
 
     @app.route('/delete')
     def delete_subscription():
-        # Todo - validation of args
+        # Topic validation
         topic = request.args.get('topic')
+        is_topic_valid, msg = validate_topic(topic)
+
+        if not is_topic_valid:
+            return jsonify({"error": msg}), 400
+
         return subscriber.delete_subscription(topic)
 
     @app.route('/list')
@@ -93,17 +179,30 @@ def main():
     download_dir = config.get("download_dir", ".")
     num_workers = config.get("download_workers", 1)
 
-
-    # Finally flask options
+    # Flask options
     flask_host = config.get("flask_host", "127.0.0.1")
-    flask_port = config.get("flask_port", 5000) # find_open_port()) # port needs to be explicitly set otherwise their may be issues with the firewall.
+    flask_port = config.get("flask_port", 5000)
 
-    # Now set up the different threads (plus job Q)
+    # Finally if the user wants to save the logs to a file
+    save_logs = config.get("save_logs", False)
+    log_dir = config.get("log_dir", ".")
+
+    # Set up logging
+    if save_logs:
+        # Create log dir if it doesn't exist
+        os.makedirs(log_dir, exist_ok=True)
+        current_time = dt.now().strftime("%Y%m%d_%H%M%S")
+        log_file = os.path.join(log_dir, f'logs_{current_time}.txt')
+        setup_logger(loglevel='INFO', logfile=log_file)
+    else:
+        setup_logger(loglevel='INFO')
+
+    # Now set up the different threads (plus job queue)
     # 1) queue monitor
     # 2) download workers
     # 3) subscriber
 
-    # create the queue
+    # Create the queue
     jobQ = SimpleQueue()
 
     # Start the queue monitor
@@ -112,19 +211,16 @@ def main():
     )
     Q_monitor.start()
 
-    # start workers to process the jobs from the queue
+    # Start workers to process the jobs from the queue
     worker_threads = []
-    # basepath = "downloads"
     for idx in range(num_workers):
         worker = DownloadWorker(jobQ, download_dir)
         worker_threads.append(
-            threading.Thread(target=worker.start,
-                             daemon=True)
+            threading.Thread(target=worker.start, daemon=True)
         )
         worker_threads[idx].start()
 
-
-    # now create the MQTT subscriber
+    # Now create the MQTT subscriber
     subscriber = MQTTSubscriber(
         broker_url, broker_port, username, password, protocol, jobQ
     )
@@ -134,35 +230,50 @@ def main():
         target=subscriber.start, daemon=True)
     mqtt_thread.start()
 
-    # add default subscriptions
+    # Add default subscriptions
     for topic, target in topics.items():
+        is_topic_valid, _ = validate_topic(topic)
+        if not is_topic_valid:
+            continue
+
+        # Remove special characters from target
+        target = validate_target(target)
+
         subscriber.add_subscription(topic, target)
 
-    # Now all background jobs / threads should be running start the flask
+    # Now all background jobs / threads should be running, start the flask
     # backend for managing the subscriptions
-
-    # Start the Flask app
     try:
         app = create_app(subscriber=subscriber)
     except Exception as e:
         LOGGER.error(f"Error creating Flask app: {e}")
 
     LOGGER.info(f"Flask host: {flask_host}, flask port: {flask_port}")
-    app.run(host=flask_host, port=flask_port, debug=True, use_reloader=False)
+    app.run(host=flask_host, port=flask_port,
+            debug=True, use_reloader=False)
+
+    # Provided the app.run() call is blocking, the following code will only
+    # be executed when the Flask app is stopped
 
     LOGGER.info("Shutting down")
+
+    # Stop the subscriber first
     subscriber.stop()
+
+    # Signal all other threads to stop
     shutdown.set()
-    # stop threads (this needs work !!!! ToDo)
+
     mqtt_thread.join()
     LOGGER.info("Subscriber thread stopped")
+
     LOGGER.info("Stopping queue monitor, this may take 60 seconds")
     Q_monitor.join()
     LOGGER.info("Queue monitor stopped")
+
     for worker in worker_threads:
         LOGGER.info("Shutting down worker threads")
+        # If download worker is blocked waiting for a job, send one
         if jobQ.size() == 0:
-            # download worker is blocked waiting for a job, send one.
             jobQ.enqueue({'shutdown': True})
         worker.join()
 

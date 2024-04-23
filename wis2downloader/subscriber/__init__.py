@@ -7,8 +7,9 @@ import ssl
 import paho.mqtt.client as mqtt
 
 from wis2downloader import shutdown
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
+from wis2downloader.metrics import TOPIC_STATUS
 
 
 class BaseSubscriber(ABC):
@@ -53,6 +54,11 @@ class BaseSubscriber(ABC):
         """Method to start subscriber, e.g. loop_forever in paho-mqtt"""
         pass
 
+    @abstractmethod
+    def stop(self):
+        """Method to stop subscriber, e.g. disconnect in paho-mqtt"""
+        pass
+
 
 class MQTTSubscriber(BaseSubscriber):
     def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443, uid: str = "everyone", pwd: str = "everyone", protocol: str = "websockets", _queue: BaseQueue = None):
@@ -79,7 +85,7 @@ class MQTTSubscriber(BaseSubscriber):
         LOGGER.info(f"Host: {broker}, port: {port}")
         self.client.connect(host=broker, port=port)
 
-    def _on_connect(self, client, userdata, flags, reason_code, properties ):
+    def _on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             LOGGER.info("Connected successfully")
         elif reason_code > 0:
@@ -96,7 +102,7 @@ class MQTTSubscriber(BaseSubscriber):
         if shutdown.is_set():
             self.client.disconnect()
         LOGGER.info(f"Message received under topic {msg.topic}")
-        target = self.active_subscriptions.get(msg.topic,{}).get('target')
+        target = self.active_subscriptions.get(msg.topic, {}).get('target')
         # if a wild card is used in the subs target may not match
         if target is None:
             for key, value in self.active_subscriptions.items():
@@ -133,10 +139,12 @@ class MQTTSubscriber(BaseSubscriber):
     def add_subscription(self, topic: str, save_path: str = "."):
         self.client.subscribe(topic)
         self.active_subscriptions[topic] = {
-            'target' : save_path,
+            'target': save_path,
             'pattern': topic.replace("+", "*").replace("#", "*")
         }
         LOGGER.info(f"Subscribing to {topic}")
+        # Set topic status to subscribed
+        TOPIC_STATUS.labels(topic=topic).set(1)
         return self.active_subscriptions
 
     def delete_subscription(self, topic: str):
@@ -144,6 +152,8 @@ class MQTTSubscriber(BaseSubscriber):
             self.client.unsubscribe(topic)
             del self.active_subscriptions[topic]
             LOGGER.info(f"Unsubscribing from {topic}")
+            # Set topic status to unsubscribed
+            TOPIC_STATUS.labels(topic=topic).set(0)
         else:
             LOGGER.info(f"Topic {topic} not found in active subscriptions")
         return self.active_subscriptions

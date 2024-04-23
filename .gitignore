@@ -1,0 +1,7 @@
+wis2downloader.egg-info
+venv
+build
+download
+logs
+
+config.json

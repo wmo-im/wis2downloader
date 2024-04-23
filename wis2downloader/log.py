@@ -41,7 +41,7 @@ def setup_logger(loglevel: str = 'ERROR', logfile: str = 'stdout') -> None:
     """
 
     log_format = \
-        '[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+        '[%(asctime)s] %(levelname)s - %(message)s'
     date_format = '%Y-%m-%dT%H:%M:%SZ'
 
     loglevels = {
@@ -64,4 +64,3 @@ def setup_logger(loglevel: str = 'ERROR', logfile: str = 'stdout') -> None:
                                 format=log_format, filename=logfile)
 
     LOGGER.debug('Logging initialized')
-    return
