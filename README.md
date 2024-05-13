@@ -14,7 +14,9 @@ The WIS2 Downloader is a Flask-based Python application that allows you to conne
 - **Multi-Threading Support**: Configure the number of download workers for more efficient data downloading.
 
 ## Demo
+![backend-demo](https://github.com/wmo-im/wis2-downloader/assets/47696929/f9eb9eb3-07bd-49df-9714-61d952000f2e)
 
+*The GET requests are demonstrated here using <a href="https://www.postman.com/">Postman</a>, but the terminal or your browser will suffice too.*
 
 ## Getting Started
 
