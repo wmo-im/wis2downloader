@@ -1,6 +1,7 @@
 wis2downloader.egg-info
 venv
 build
+dist
 download
 logs
 
