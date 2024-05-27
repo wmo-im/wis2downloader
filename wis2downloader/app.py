@@ -234,10 +234,15 @@ def main():
     for topic, target in topics.items():
         is_topic_valid, _ = validate_topic(topic)
         if not is_topic_valid:
+            LOGGER.warning(
+                "Invalid topic in default config, please check config file")
             continue
 
-        # Remove special characters from target
-        target = validate_target(target)
+        is_target_valid, _ = validate_target(target)
+        if not is_target_valid:
+            LOGGER.warning(
+                "Invalid target in default config, please check config file")
+            continue
 
         subscriber.add_subscription(topic, target)
 
