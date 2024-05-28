@@ -20,6 +20,6 @@
 ###############################################################################
 from threading import Event
 
-__version__ = '0.1.dev1'
+__version__ = '0.1.1'
 
 shutdown = Event()
