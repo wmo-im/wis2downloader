@@ -13,11 +13,14 @@ jobs:
         with:
           python-version: 3.8
         
-      - name: Docker Compose up -d --build, sleep 10 seconds to ensure service is up
+      - name: Docker Compose up -d --build
         working-directory: docker_compose_test
         run:
           docker-compose up -d  --build
-          sleep 10
+
+      - name: Sleep 10 seconds
+        run: sleep 10
+
       - name: Check status code /list, fail if not 200
         run: |
           curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/list
