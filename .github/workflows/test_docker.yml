@@ -16,7 +16,7 @@ jobs:
       - name: Docker Compose up -d --build
         working-directory: docker_compose_test
         run:
-          docker-compose.yml up -d  --build
+          docker-compose up -d  --build
 
       - name: Check status code /list
         run: |
