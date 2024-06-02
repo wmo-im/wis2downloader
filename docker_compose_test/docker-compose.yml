@@ -1,0 +1,9 @@
+services:
+  wis2-downloader:
+    image: wis2-downloader
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: wis2-downloader
+    ports: 
+      - "5000:5000"

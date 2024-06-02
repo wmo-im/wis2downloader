@@ -1,0 +1,32 @@
+name: test-with-docker-compose
+
+on: [ push, pull_request ]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        name: setup Python
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install -r requirements.txt
+        
+      - name: Docker Compose up -d --build
+        working-directory: docker_compose_test
+        run:
+          docker-compose.yml up -d  --build
+
+      - name: Check status code /list
+        run: |
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/list)
+          if [[ $status_code -ne 200 ]]; then
+            echo "Request failed with status code $status_code"
+            exit 1
+          fi
