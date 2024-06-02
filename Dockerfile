@@ -1,7 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-EXPOSE 5000
+EXPOSE 8080
 
 # define config variables
 ENV DOWNLOAD_DIR /app/downloads
@@ -12,7 +12,7 @@ ENV BROKER_USERNAME "everyone"
 ENV BROKER_PASSWORD "everyone"
 ENV BROKER_PROTOCOL "websockets"
 ENV FLASK_HOST "0.0.0.0"
-ENV FLASK_PORT 5000
+ENV FLASK_PORT 8080
 ENV DOWNLOAD_WORKERS 8
 ENV SAVE_LOGS false
 ENV LOGS_DIR /app/logs

@@ -181,7 +181,7 @@ def main():
 
     # Flask options
     flask_host = config.get("flask_host", "127.0.0.1")
-    flask_port = config.get("flask_port", 5000)
+    flask_port = config.get("flask_port", 8080)
 
     # Finally if the user wants to save the logs to a file
     save_logs = config.get("save_logs", False)

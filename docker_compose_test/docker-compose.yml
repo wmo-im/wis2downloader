@@ -6,4 +6,4 @@ services:
       dockerfile: Dockerfile
     container_name: wis2-downloader
     ports: 
-      - "5000:5000"
+      - "8080:8080"
