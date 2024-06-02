@@ -13,15 +13,19 @@ jobs:
         with:
           python-version: 3.8
         
-      - name: Docker Compose up -d --build
+      - name: Docker Compose up -d --build, sleep 10 seconds to ensure service is up
         working-directory: docker_compose_test
         run:
           docker-compose up -d  --build
-
-      - name: Check status code /list
+          sleep 10
+      - name: Check status code /list, fail if not 200
         run: |
-          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/list)
-          if [[ $status_code -ne 200 ]]; then
-            echo "Request failed with status code $status_code"
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/list
+          if [ $? -ne 0 ]; then
+            echo "curl failed"
+            exit 1
+          fi
+          if [ $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/list) -ne 200 ]; then
+            echo "status code not 200"
             exit 1
           fi
