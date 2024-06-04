@@ -33,7 +33,7 @@ Create a file `config.json` in your local directory, with the following contents
 
 ```json
 {
-    "broker_url": "replace with url of the global broker, e.g. globalbroker.meteo.fr",
+    "broker_hostname": "replace with hostname of the global broker, e.g. globalbroker.meteo.fr",
     "broker_port": "replace with the port to use on the global broker, e.g. 443",
     "username": "username to use on the global broker, default everyone",
     "password": "password to use on the global broker, default everyone",

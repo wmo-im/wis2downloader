@@ -168,7 +168,7 @@ def main():
         config = json.load(f)
 
     # Extract MQTT options
-    broker_url = config.get("broker_url", "globalbroker.meteo.fr")
+    broker_hostname = config.get("broker_hostname", "globalbroker.meteo.fr")
     broker_port = config.get("broker_port", 443)
     username = config.get("username", "everyone")
     password = config.get("password", "everyone")
@@ -177,6 +177,7 @@ def main():
     # Download options, i.e. where to write data to, number of workers
     topics = config.get("topics", {})
     download_dir = config.get("download_dir", ".")
+    max_usage = config.get("max_usage", 10)
     num_workers = config.get("download_workers", 1)
 
     # Flask options
@@ -214,7 +215,7 @@ def main():
     # Start workers to process the jobs from the queue
     worker_threads = []
     for idx in range(num_workers):
-        worker = DownloadWorker(jobQ, download_dir)
+        worker = DownloadWorker(jobQ, download_dir, max_usage)
         worker_threads.append(
             threading.Thread(target=worker.start, daemon=True)
         )
@@ -222,7 +223,7 @@ def main():
 
     # Now create the MQTT subscriber
     subscriber = MQTTSubscriber(
-        broker_url, broker_port, username, password, protocol, jobQ
+        broker_hostname, broker_port, username, password, protocol, jobQ
     )
 
     # Now spawn subscriber as thread

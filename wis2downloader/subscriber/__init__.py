@@ -110,6 +110,11 @@ class MQTTSubscriber(BaseSubscriber):
                     target = value['target']
                     break
 
+        if target is None:
+            # subscription no longer active, return
+            LOGGER.warning(f"Topic {msg.topic} not found in active subscriptions, skipping")
+            return
+
         if target == "$TOPIC":
             target = msg.topic
 

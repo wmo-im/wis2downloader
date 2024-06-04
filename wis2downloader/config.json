@@ -1,11 +1,12 @@
 {
-    "broker_url": "globalbroker.meteo.fr",
+    "broker_hostname": "globalbroker.meteo.fr",
     "broker_port": 443,
     "username": "everyone",
     "password": "everyone",
     "protocol": "websockets",
     "topics": {},
     "download_dir": "downloads",
+    "max_usage": 10,
     "flask_host": "127.0.0.1",
     "flask_port": 8080,
     "download_workers": 1,
