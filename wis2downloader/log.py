@@ -22,15 +22,15 @@
 # https://github.com/wmo-im/wis2box/blob/main/wis2box-management/wis2box/log.py
 ###############################################################################
 
-"""Logging system"""
-
+from datetime import datetime as dt
 import logging
+from pathlib import Path
 import sys
 
 LOGGER = logging.getLogger(__name__)
 
 
-def setup_logger(loglevel: str = 'ERROR', logfile: str = 'stdout') -> None:
+def setup_logger(loglevel: str = 'ERROR', save=False, log_path = None) -> None:
     """
     Setup logger
 
@@ -55,12 +55,24 @@ def setup_logger(loglevel: str = 'ERROR', logfile: str = 'stdout') -> None:
 
     loglevel = loglevels[loglevel]
 
-    if logfile is not None:
-        if logfile == 'stdout':
-            logging.basicConfig(level=loglevel, datefmt=date_format,
-                                format=log_format, stream=sys.stdout)
-        else:
-            logging.basicConfig(level=loglevel, datefmt=date_format,
-                                format=log_format, filename=logfile)
+    args = {
+        'level': loglevel,
+        'datefmt': date_format,
+        'format': log_format,
+    }
+
+    if save:
+        # set path
+        current_time = dt.now().strftime("%Y%m%d_%H%M%S")
+        if log_path is None:
+            log_path = "."
+        logfile = 'wis2downloader' + current_time + '.log'
+        logfile = Path(log_path) / logfile
+        logfile.parent.mkdir(parents=True, exist_ok=True)
+        args['filename'] = logfile
+    else:
+        args['stream'] = sys.stdout
+
+    logging.basicConfig(**args)
 
     LOGGER.debug('Logging initialized')

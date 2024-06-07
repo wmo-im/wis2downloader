@@ -8,7 +8,7 @@ from datetime import datetime as dt
 from pathlib import Path
 import enum
 
-from wis2downloader import shutdown
+from wis2downloader import stop_event
 from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
 from wis2downloader.metrics import (DOWNLOADED_BYTES, DOWNLOADED_FILES,
@@ -104,10 +104,10 @@ class DownloadWorker(BaseDownloader):
 
     def start(self) -> None:
         LOGGER.info("Starting download worker")
-        while not shutdown.is_set():
+        while not stop_event.is_set():
             # First get the job from the queue
             job = self.queue.dequeue()
-            if job.get('shutdown', None):
+            if job.get('shutdown', False):
                 break
 
             try:

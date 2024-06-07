@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from queue import Queue
 import time
 
-from wis2downloader import shutdown
+from wis2downloader import stop_event
 from wis2downloader.log import LOGGER
 from wis2downloader.metrics import QUEUE_SIZE
 
@@ -49,7 +49,7 @@ class BaseQueue(ABC):
 
 class QMonitor:
     def __init__(self, _queue: BaseQueue, period: int = 60):
-        while not shutdown.is_set():
+        while not stop_event.is_set():
             LOGGER.info(f"Queue size: {_queue.size()}")
             time.sleep(period)
 

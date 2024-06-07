@@ -6,7 +6,7 @@ import ssl
 
 import paho.mqtt.client as mqtt
 
-from wis2downloader import shutdown
+from wis2downloader import stop_event
 from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
 from wis2downloader.metrics import TOPIC_STATUS
@@ -61,12 +61,25 @@ class BaseSubscriber(ABC):
 
 
 class MQTTSubscriber(BaseSubscriber):
-    def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443, uid: str = "everyone", pwd: str = "everyone", protocol: str = "websockets", _queue: BaseQueue = None):
+    def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443,
+                 uid: str = "everyone", pwd: str = "everyone",
+                 protocol: str = "websockets", _queue: BaseQueue = None,
+                 client_id: str = ''):
 
-        LOGGER.debug("Initializing MQTT subscriber")
+        LOGGER.warning("Initializing MQTT subscriber")
 
-        self.client = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, transport=protocol)
+        args = {
+            'callback_api_version': mqtt.CallbackAPIVersion.VERSION2,
+            'transport': protocol,
+        }
+        if len(client_id) > 0:
+            args['client_id'] = client_id
+            args['clean_session'] = False
+
+        LOGGER.info(args)
+
+        self.client = mqtt.Client(**args)
+
         self.client.tls_set(ca_certs=None, certfile=None, keyfile=None,
                             cert_reqs=ssl.CERT_REQUIRED,
                             tls_version=ssl.PROTOCOL_TLS,
@@ -99,7 +112,7 @@ class MQTTSubscriber(BaseSubscriber):
 
     def _on_message(self, client, userdata, msg):
         # first check shutdown is not set
-        if shutdown.is_set():
+        if stop_event.is_set():
             self.client.disconnect()
         LOGGER.info(f"Message received under topic {msg.topic}")
         target = self.active_subscriptions.get(msg.topic, {}).get('target')
@@ -142,7 +155,7 @@ class MQTTSubscriber(BaseSubscriber):
                     f"Subscription to topic failed with error code {sub_result}")  # noqa
 
     def add_subscription(self, topic: str, save_path: str = "."):
-        self.client.subscribe(topic)
+        self.client.subscribe(topic, qos=1)
         self.active_subscriptions[topic] = {
             'target': save_path,
             'pattern': topic.replace("+", "*").replace("#", "*")
@@ -170,4 +183,5 @@ class MQTTSubscriber(BaseSubscriber):
         self.client.loop_forever()
 
     def stop(self):
+        self.client.loop_stop()
         self.client.disconnect()

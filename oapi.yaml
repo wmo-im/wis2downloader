@@ -1,0 +1,114 @@
+openapi: 3.0.0
+x-api-id: wis2-downloader-api
+info:
+  title: WIS2 downloader API
+  version: 0.1.dev2
+  description: Description of API implemented for the WIS2 downloader
+servers:
+  - url: http://127.0.0.1:5050
+paths:
+  /subscriptions:
+    post:
+      summary: Subscribe to specified topic
+      description: Subscribe to specified topic
+      parameters:
+        - in: query
+          name: topic
+          description: WIS2 topic to subscribe to
+          required: true
+          schema:
+            type: string
+            example: cache/a/wis2/+/data/core/weather/surface-based-observations/#
+        - in: query
+          name: target
+          description: Sub directory to save data to
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON object containing the subscribed topics after specified topic subscribed to
+          content:
+            application/json:
+              schema:
+                type: object
+                patternProperties:
+                  ".*":
+                    description: abc
+                    type: object
+                    properties:
+                      target:
+                        type: string
+                        description: Sub directory to save data downloaded data to
+                      pattern:
+                        type: string
+                        description: Pattern used to match topic
+                    required:
+                      - target
+                      - pattern
+    get:
+      summary: Returns list of subscribed topics
+      description: Returns list of subscribed topics
+      responses:
+        '200':
+          description: A JSON object containing the subscribed topics
+          content:
+            application/json:
+              schema:
+                type: object
+                patternProperties:
+                  ".*":
+                    description: abc
+                    type: object
+                    properties:
+                      target:
+                        type: string
+                        description: Sub directory to save data downloaded data to
+                      pattern:
+                        type: string
+                        description: Pattern used to match topic
+                    required:
+                      - target
+                      - pattern
+    delete:
+        summary: Unsubscribe from specified topic
+        description: Unsubscribe from specified topic
+        parameters:
+          - in: query
+            name: topic
+            description: WIS2 topic to unsubscribe from
+            schema:
+              type: string
+            required: true
+        responses:
+          '200':
+            description: A JSON object containing the subscribed topics remaining after specified topc unsubscribed
+            content:
+              application/json:
+                schema:
+                  type: object
+                  patternProperties:
+                    ".*":
+                      description: abc
+                      type: object
+                      properties:
+                        target:
+                          type: string
+                          description: Sub directory to save data downloaded data to
+                        pattern:
+                          type: string
+                          description: Pattern used to match topic
+                      required:
+                        - target
+                        - pattern
+  /metrics:
+    get:
+      summary: Get of list of published metrics
+      description: Get list of published metrics
+      responses:
+        '200':
+          description: List of published metrics suitable for integration with Prometheus
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: List of metrics

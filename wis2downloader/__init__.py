@@ -22,4 +22,4 @@ from threading import Event
 
 __version__ = '0.1.dev2'
 
-shutdown = Event()
+stop_event = Event()
