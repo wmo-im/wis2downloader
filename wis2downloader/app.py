@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import click
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, render_template
 from flask_cors import CORS
 from prometheus_client import generate_latest, REGISTRY
 
@@ -45,7 +45,7 @@ for idx in range(CONFIG['download_workers']):
 # Now create the MQTT subscriber
 mqtt_session = Path(CONFIG['mqtt_session_info'])
 if mqtt_session is None:
-    mqtt_session = ".session.json"
+    mqtt_session = ".mqtt_session.json"
 
 mqtt_session = Path(mqtt_session)
 if mqtt_session.is_file():
@@ -183,6 +183,12 @@ def delete_subscription():
 
     return Response(response=json.dumps(subs), status=200,
                     mimetype="application/json")
+
+
+@app.route('/swagger')
+def render_swagger():
+    return render_template('swagger.html')
+
 
 @click.command()
 @click.pass_context
