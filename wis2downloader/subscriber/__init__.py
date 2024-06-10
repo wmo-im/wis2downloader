@@ -80,10 +80,11 @@ class MQTTSubscriber(BaseSubscriber):
 
         self.client = mqtt.Client(**args)
 
-        self.client.tls_set(ca_certs=None, certfile=None, keyfile=None,
-                            cert_reqs=ssl.CERT_REQUIRED,
-                            tls_version=ssl.PROTOCOL_TLS,
-                            ciphers=None)
+        if port in [443, 8883]:
+            self.client.tls_set(ca_certs=None, certfile=None, keyfile=None,
+                                cert_reqs=ssl.CERT_REQUIRED,
+                                tls_version=ssl.PROTOCOL_TLS,
+                                ciphers=None)
         self.client.username_pw_set(uid, pwd)
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
