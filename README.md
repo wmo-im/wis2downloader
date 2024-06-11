@@ -14,15 +14,80 @@ The WIS2 Downloader is a Flask-based Python application that allows you to conne
 ## Getting Started
 
 ### 1. Installation
-You can install using Pip:
+
+__NOTE__: Thw downloader has not yet been uploaded to PyPI and needs to be installed directly from github:
 
 ```bash
-pip install wis2downloader
+pip install https://github.com/wmo-im/wis2downloader/archive/main.zip
 ```
+
+This will install the version from the main development branch.
 
 ### 2. Configuration
 
-Create a file `config.json` in your local directory, with the following contents:
+Create a file `config.json` in your local directory that conforms with the following schema:
+
+```yaml
+schema:
+  type: object
+  properties:
+    broker_hostname:
+      type: string
+      description: The hostname of the global broker to subscribe to.
+      example: globalbroker.meteo.fr
+    broker_password:
+      type: string
+      description: The password to use when connecting to the specified global broker.      
+      example: everyone
+    broker_port:
+      type: number
+      description: The port the global broker is using for the specified protocol.
+      example: 443
+    broker_protocol:
+      type: string
+      description: The protocol (websockets or tcp) to use when connecting to the global broker.
+      example: websockets
+    broker_username:
+      type: string
+      description: The username to use when connecting to the global broker.
+      example: everyone
+    download_workers:
+      type: number
+      description: The number of download worker threads to spawn.
+      example: 1
+    download_dir:
+      type: string
+      description: The path to download data to.
+      example: ./downloads
+    flask_host:
+      type: string
+      description: Network interface on which flask should listen when run in dev mode.
+      example: 0.0.0.0
+    flask_port:
+      type: number
+      description: The port on which flask should listen when run in dev mode.
+      example: 5050
+    log_path:
+      type: string
+      description: Path to write log files to.
+      example: ./logs
+    max_disk_usage:
+      type: number
+      description: Maximum size (MB) for the download path.
+      example: 10
+    save_logs:
+      type: boolean
+      description: Write log files to disk (true) or stdout (false)
+      example: false
+    mqtt_session_info:
+      type: string
+      description: 
+        File to save session information (active subscriptions and MQTT client id) to. 
+        Used to persist subscriptions on restart.
+      example: mqtt_session.json
+```
+
+An example is given below:
 
 ```json
 {
@@ -41,10 +106,6 @@ Create a file `config.json` in your local directory, with the following contents
     "mqtt_session_info" : "mqtt_session.json"
 }
 ```
-
-This file is used by the WIS2 downloader and specifies to connect to the WIS2 global broker run by MétéoFrance, 
-with one download worker and saves the downloaded files to a folder called downloads relative to the current working 
-directory.
 
 ### 3. Running
 
@@ -82,46 +143,69 @@ with `Ctrl+C`.
 
 ## Maintaining and Monitoring Subscriptions
 
-The API defintion of the downloader can be found at the `./swagger` endpoint, e.g. when run locally see
-http://localhost:5050/swagger
+The API defintion of the downloader can be found at the `/swagger` endpoint, when run locally see
+http://localhost:5050/swagger. this includes the ability to try out the different end points.
 
 ### Adding subscriptions
-Subscriptions can be added via a GET request to the `./subscriptions` endpoint on the Flask app, with the following form:
+Subscriptions can be added via a POST request to the `/subscriptions` endpoint.
+The request body should be JSON-encoded and adhere to the following schema: 
 
-```bash
-curl -X POST http://<flask-host>:<flask-port>/subscriptions?topic=<topic-name>&target=<download-directory>
+```yaml
+schema:
+  type: object
+  properties:
+    topic:
+      type: string
+      description: The WIS2 topic to subscribe to
+      example: cache/a/wis2/+/data/core/weather/surface-based-observations/#
+    target:
+      type: string
+      description: Sub directory to save data to
+      example: surface-obs
+  required:
+    - topic
 ```
 
-- `topic` specifies the topic to subscribe to. *Special characters (+, #) must be URL encoded, i.e. `+` = `%2B`, `#` = `%23`.*
-- `target` specifies the directory to save the downloads to, relative to `download_dir` from `config.json`. *If this is not provided, the directory will default to that of the topic hierarchy.*
+In this example all notifications published to the `surface-based-observations` topic from any WIS2 centre will be 
+subscribed to, with the downloaded data written to the `surface-obs` subdirectory of the `download_dir`. 
 
-For example:
+Notes:
+1. If the `target` is not specified it will default to the topic the data are published on.
+1. The `+` wild card is used to specify any match at a single level, matching as WIS2 centre in the above example.
+1. The `#` wild card matches any topic at or below the level it occurs. In the above example any topic published below 
+cache/a/wis2/+/data/core/weather/surface-based-observations will be matched.
+
+#### Example CURL command:
+
 ```bash
-curl -X POST http://localhost:5050/subscriptions?topic=cache/a/wis2/%2B/data/core/weather/%23&target=example_data
+curl -X 'POST' \
+  'http://127.0.0.1:5050/subscriptions' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "topic": "cache/a/wis2/+/data/core/weather/surface-based-observations/#",
+      "target": "surface-obs"
+  }'
 ```
-
-The list of active subscriptions should be returned as a JSON object.
 
 ### Deleting subscriptions
-Subscriptions are deleted similarly via a DELETE request to the `./subscriptions` endpoint, with the following form:
+Subscriptions are deleted via a DELETE request to the `/subscriptions/{topic}` endpoint where `{topic}` is the topic 
+to unsubscribe from. 
+
+#### Example CURL command
+
 ```bash
-curl -X DELETE http://<flask-host>:<flask-port>/delete?topic=<topic-name>
+curl -X DELETE http://localhost:5050/subscriptions/cache/a/wis2/%2B/data/core/weather/%23
 ```
 
-For example:
-```bash
-curl -X DELETE http://localhost:5050/subscriptions?topic=cache/a/wis2/%2B/data/core/weather/%23
-```
+This cancels the `cache/a/wis2/+/data/core/weather/#` subscription. Note the need to url encode the `+` (`%2B`) 
+and `#` (`%23`) symbols.
 
-The list of active subscriptions should be returned as a JSON object.
 ### Listing subscriptions
-Subscriptions are listed via a GET request to `./subscriptions`:
+Current subscriptions can listed via a GET request to `/subscriptions` end point.
 
-```bash
-curl http://<flask-host>:<flask-port>/subscriptions
-```
+#### Example CURL command
 
-For example:
 ```bash
 curl http://localhost:5050/subscriptions
 ```
@@ -129,15 +213,17 @@ curl http://localhost:5050/subscriptions
 The list of active subscriptions should be returned as a JSON object.
 
 ### Viewing download metrics
-Prometheus metrics for the downloader are found via a GET request to `./metrics`, e.g.:
+Prometheus metrics for the downloader are found via a GET request to the `/metrics` end point.
+
+#### Example CURL command
 
 ```bash
-curl http://<flask-host>:<flask-port>/metrics
+curl http://localhost:5050/metrics
 ```
 
 ## Bugs and Issues
 
-All bugs, enhancements and issues are managed on [GitHub](https://github.com/wmo-im/wis2-downloader/issues).
+All bugs, enhancements and issues are managed on [GitHub](https://github.com/wmo-im/wis2downloader/issues).
 
 ## Contact
 

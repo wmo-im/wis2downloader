@@ -35,71 +35,96 @@ paths:
     post:
       summary: Subscribe to specified topic
       description: Subscribe to specified topic
-      parameters:
-        - in: query
-          name: topic
-          description: WIS2 topic to subscribe to
-          required: true
-          schema:
-            type: string
-            example: cache/a/wis2/+/data/core/weather/surface-based-observations/#
-        - in: query
-          name: target
-          description: Sub directory to save data to
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  description: The WIS2 topic to subscribe to
+                  example: cache/a/wis2/+/data/core/weather/surface-based-observations/#
+                target:
+                  type: string
+                  description: Sub directory to save data to
+                  example: surface-obs
+              required:
+                - topic
       responses:
-        '200':
-          description: A JSON object containing the subscribed topics after specified topic subscribed to
+        '201':
+          description: A JSON object containing the subscribed topic after specified topic subscribed to
           content:
             application/json:
               schema:
                 type: object
-                patternProperties:
-                  ".*":
-                    description: abc
-                    type: object
-                    properties:
-                      target:
-                        type: string
-                        description: Sub directory to save data downloaded data to
-                      pattern:
-                        type: string
-                        description: Pattern used to match topic
-                    required:
-                      - target
-                      - pattern
+                properties:
+                  target:
+                    type: string
+                    description: Sub directory to save data downloaded data to
+                  pattern:
+                    type: string
+                    description: Pattern used to match topic
+                required:
+                  - target
+                  - pattern
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal server error
+
+
+  /subscriptions/{topic}:
     delete:
-        summary: Unsubscribe from specified topic
-        description: Unsubscribe from specified topic
-        parameters:
-          - in: query
-            name: topic
-            description: WIS2 topic to unsubscribe from
-            schema:
-              type: string
-            required: true
-        responses:
-          '200':
-            description: A JSON object containing the subscribed topics remaining after specified topc unsubscribed
-            content:
-              application/json:
-                schema:
-                  type: object
-                  patternProperties:
-                    ".*":
-                      description: abc
-                      type: object
-                      properties:
-                        target:
-                          type: string
-                          description: Sub directory to save data downloaded data to
-                        pattern:
-                          type: string
-                          description: Pattern used to match topic
-                      required:
-                        - target
-                        - pattern
+      summary: Unsubscribe from specified topic
+      description: Unsubscribe from specified topic
+      parameters:
+        - in: path
+          name: topic
+          description: WIS2 topic to unsubscribe from
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Subscription successfully removed.
+        '400':
+          description: Invalid topic specified
+        '404':
+          description: Subscription not found.
+    get:
+      summary: Get information on specified subscription
+      description: Get information on specified subscription
+      parameters:
+        - in: path
+          name: topic
+          description: WIS2 topic to unsubscribe from
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A JSON object containing information on the subscribed topic.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  target:
+                    type: string
+                    description: Sub directory to save data downloaded data to.
+                  pattern:
+                    type: string
+                    description: Pattern used to match topic.
+                required:
+                  - target
+                  - pattern
+        '400':
+          description: Invalid topic.
+        '404':
+          description: Subscription not found.
+
   /metrics:
     get:
       summary: Get of list of published metrics

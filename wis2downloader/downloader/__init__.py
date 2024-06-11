@@ -101,6 +101,7 @@ class DownloadWorker(BaseDownloader):
         self.queue = queue
         self.basepath = Path(basepath)
         self.max_usage = max_usage * 1024 * 1024
+        self.status = "ready"
 
     def start(self) -> None:
         LOGGER.info("Starting download worker")
@@ -110,11 +111,13 @@ class DownloadWorker(BaseDownloader):
             if job.get('shutdown', False):
                 break
 
+            self.status = "running"
             try:
                 self.process_job(job)
             except Exception as e:
                 LOGGER.error(e)
 
+            self.status = "ready"
             self.queue.task_done()
 
     def get_disk_usage(self):

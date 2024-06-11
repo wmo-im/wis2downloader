@@ -1,11 +1,13 @@
 import json
 from pathlib import Path
 import threading
+from urllib.parse import unquote
 from uuid import uuid4
 
 import click
 
-from flask import Flask, request, jsonify, Response, render_template
+from flask import Flask, request, jsonify, Response, render_template, abort, url_for
+
 from flask_cors import CORS
 from prometheus_client import generate_latest, REGISTRY
 
@@ -128,51 +130,77 @@ def expose_metrics():
     return Response(generate_latest(REGISTRY), mimetype="text/plain")
 
 @app.get('/subscriptions')
-@app.route('/subscriptions/list')
 def list_subscriptions():
     subs = subscriber.list_subscriptions()
-    return Response(response=json.dumps(subs), status=200,
-                    mimetype="application/json")
+    return jsonify(subs)
+
 
 @app.post('/subscriptions')
-@app.route('/subscriptions/add')
 def add_subscription():
     # Topic validation
-    topic = request.args.get('topic')
-    is_topic_valid, msg = validate_topic(topic)
+    if not request.is_json:
+        abort(400, "Invalid input")
 
+    data = request.json
+    topic = unquote( data.get("topic") )
+
+    is_topic_valid, msg = validate_topic(topic)
     if not is_topic_valid:
-        return jsonify({"error": msg}), 400
+        abort(400, f"Invalid input ({msg})")
 
     # Target validation
-    target = request.args.get('target')
+    target = data.get('target')
     if target in (None, "$TOPIC"):
         target = "$TOPIC"
 
     is_target_valid, msg = validate_target(target)
 
     if not is_target_valid:
-        return jsonify({"error": msg}), 400
+        abort(400, f"Invalid input ({msg})")
 
-    subs = subscriber.add_subscription(topic, target)
+    try:
+        subs = subscriber.add_subscription(topic, target)
+    except Exception as e:
+        abort(500, f"Internal server error: {e}")
 
     session_info['topics'][topic] = target
 
-    with open(CONFIG['mqtt_session_info'],'w') as fh:
-        json.dump(session_info, fh)
+    try:
+        with open(CONFIG['mqtt_session_info'],'w') as fh:
+            json.dump(session_info, fh)
+    except Exception as e:
+        abort(500, "Internal server error")
 
-    return Response(response=json.dumps(subs), status=200,
-                    mimetype="application/json")
+    response = jsonify(subs[topic])
+    response.status_code = 201
+    response.headers['Location'] = url_for('get_subscription',topic=topic)
 
-@app.delete('/subscriptions')
-@app.route('/subscriptions/delete')
-def delete_subscription():
+    return response
+
+@app.get('/subscriptions/<path:topic>')
+def get_subscription(topic):
     # Topic validation
-    topic = request.args.get('topic')
+    topic = unquote(topic)
     is_topic_valid, msg = validate_topic(topic)
-
     if not is_topic_valid:
-        return jsonify({"error": msg}), 400
+        abort(400,f"Invalid input ({msg})")
+
+    if topic not in subscriber.active_subscriptions:
+        abort(404, "Subscription not found")
+
+    return jsonify( subscriber.active_subscriptions[topic])
+
+
+@app.delete('/subscriptions/<path:topic>')
+def delete_subscription(topic):
+    topic = unquote(topic)
+    # Topic validation
+    is_topic_valid, msg = validate_topic(topic)
+    if not is_topic_valid:
+        abort(400,f"Invalid input ({msg})")
+
+    if topic not in subscriber.active_subscriptions:
+        abort(404, "Subscription not found")
 
     subs = subscriber.delete_subscription(topic)
 
