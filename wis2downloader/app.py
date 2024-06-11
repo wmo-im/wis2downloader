@@ -79,7 +79,11 @@ mqtt_thread.start()
 
 # Add default subscriptions
 for topic, target in session_info['topics'].items():
-    is_topic_valid, _ = validate_topic(topic)
+    if CONFIG['validate_topics']:
+        is_topic_valid, _ = validate_topic(topic)
+    else:
+        is_topic_valid = True
+
     if not is_topic_valid:
         LOGGER.warning(
             "Invalid topic in default config, please check config file")
@@ -144,7 +148,12 @@ def add_subscription():
     data = request.json
     topic = unquote( data.get("topic") )
 
-    is_topic_valid, msg = validate_topic(topic)
+    if CONFIG['validate_topics']:
+        is_topic_valid, msg = validate_topic(topic)
+    else:
+        is_topic_valid = True
+        msg = ''
+
     if not is_topic_valid:
         abort(400, f"Invalid input ({msg})")
 
@@ -181,7 +190,12 @@ def add_subscription():
 def get_subscription(topic):
     # Topic validation
     topic = unquote(topic)
-    is_topic_valid, msg = validate_topic(topic)
+
+    if CONFIG['validate_topics']:
+        is_topic_valid, msg = validate_topic(topic)
+    else:
+        is_topic_valid = True
+
     if not is_topic_valid:
         abort(400,f"Invalid input ({msg})")
 
@@ -194,8 +208,13 @@ def get_subscription(topic):
 @app.delete('/subscriptions/<path:topic>')
 def delete_subscription(topic):
     topic = unquote(topic)
+
     # Topic validation
-    is_topic_valid, msg = validate_topic(topic)
+    if CONFIG['validate_topics']:
+        is_topic_valid, _ = validate_topic(topic)
+    else:
+        is_topic_valid = True
+
     if not is_topic_valid:
         abort(400,f"Invalid input ({msg})")
 
