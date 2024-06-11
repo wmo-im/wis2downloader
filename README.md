@@ -57,7 +57,7 @@ schema:
       example: 1
     download_dir:
       type: string
-      description: The path to download data to.
+      description: The path to download data to on the server/computer running the wis2downloader.
       example: ./downloads
     flask_host:
       type: string
@@ -73,7 +73,7 @@ schema:
       example: ./logs
     max_disk_usage:
       type: number
-      description: Maximum size (MB) for the download path.
+      description: Maximum size (MB) for the download path specified by download_dir.
       example: 10
     save_logs:
       type: boolean
