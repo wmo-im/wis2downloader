@@ -193,10 +193,11 @@ class DownloadWorker(BaseDownloader):
             FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
-        if self.get_disk_usage() + filesize > self.max_usage:
-            LOGGER.warning(f"Max disk usage exceeded {self.get_disk_usage() + filesize} > {self.max_usage} , file {data_id} not downloaded")
-            FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
-            return
+        if self.max_usage> 0:  # only check size if limit set
+            if self.get_disk_usage() + filesize > self.max_usage:
+                LOGGER.warning(f"Max disk usage exceeded {self.get_disk_usage() + filesize} > {self.max_usage} , file {data_id} not downloaded")
+                FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
+                return
 
         if response is None:
             FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)

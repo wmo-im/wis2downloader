@@ -147,7 +147,7 @@ def add_subscription():
 
     data = request.json
     topic = unquote( data.get("topic") )
-
+    LOGGER.info(f"Subscribing to {topic}")
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
     else:
