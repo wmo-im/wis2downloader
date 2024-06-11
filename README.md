@@ -132,7 +132,7 @@ wis2downloader
 
 *Using gunicorn (Linux only)*
 ```
-gunicorn -w 1 wis2downloader
+gunicorn --bind 0.0.0.0:5050 -w 1 wis2downloader.app:app
 ```
 
 **Note**: Only one worker is supported due to the downloader spawning additional threads and persistence of MQTT
