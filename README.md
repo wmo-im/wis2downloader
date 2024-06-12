@@ -87,6 +87,10 @@ schema:
         File to save session information (active subscriptions and MQTT client id) to. 
         Used to persist subscriptions on restart.
       example: mqtt_session.json
+    validate_topics:
+      type: boolean
+      description: Whether to validate the specified topic against the published WIS2 topic hierarchy.
+      example: true
 ```
 
 An example is given below:
@@ -105,7 +109,8 @@ An example is given below:
     "log_path": "logs",
     "min_free_space": 10,
     "save_logs": false,
-    "mqtt_session_info" : "mqtt_session.json"
+    "mqtt_session_info" : "mqtt_session.json",
+    "validate_topics": true
 }
 ```
 
