@@ -20,6 +20,6 @@
 ###############################################################################
 from threading import Event
 
-__version__ = '0.1.dev2'
+__version__ = '0.2.0'
 
 stop_event = Event()
