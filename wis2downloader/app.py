@@ -25,7 +25,7 @@ from wis2downloader.utils.config import load_config
 CONFIG = load_config()
 
 
-setup_logger(loglevel = 'DEBUG',
+setup_logger(loglevel = CONFIG['log_level'],
              save = CONFIG['save_logs'],
              log_path = CONFIG['log_path'])
 

@@ -72,6 +72,10 @@ schema:
       type: number
       description: The port on which flask should listen when run in dev mode.
       example: 5050
+    log_level:
+      type: string
+      description: Log level to use
+      example: DEBUG
     log_path:
       type: string
       description: Path to write log files to.
@@ -112,6 +116,7 @@ An example is given below:
     "download_dir": "downloads",
     "flask_host": "0.0.0.0",
     "flask_port": 5050,
+    "log_level": "DEBUG",
     "log_path": "logs",
     "min_free_space": 10,
     "mqtt_session_info" : "mqtt_session.json",
