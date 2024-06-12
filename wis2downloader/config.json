@@ -5,7 +5,7 @@
     "broker_port": 443,
     "broker_protocol": "websockets",
     "broker_username": "everyone",
-    "download_workers": 8,
+    "download_workers": 1,
     "download_dir": "downloads",
     "flask_host": "0.0.0.0",
     "flask_port": 5050,

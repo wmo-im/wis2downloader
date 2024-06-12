@@ -236,7 +236,8 @@ def delete_subscription(topic):
 
 @app.route('/swagger')
 def render_swagger():
-    return render_template('swagger.html')
+
+    return render_template('swagger.html', )
 
 
 @app.route('/openapi')

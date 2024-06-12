@@ -1,0 +1,2 @@
+recursive-include wis2downloader/templates *
+recursive-include wis2downloader/static *
