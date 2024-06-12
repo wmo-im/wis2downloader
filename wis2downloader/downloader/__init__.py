@@ -7,8 +7,9 @@ import os
 from datetime import datetime as dt
 from pathlib import Path
 import enum
+import shutil
 
-from wis2downloader import shutdown
+from wis2downloader import stop_event
 from wis2downloader.log import LOGGER
 from wis2downloader.queue import BaseQueue
 from wis2downloader.metrics import (DOWNLOADED_BYTES, DOWNLOADED_FILES,
@@ -40,7 +41,7 @@ class BaseDownloader(ABC):
         pass
 
     @abstractmethod
-    def get_links(self, job):
+    def get_download_url(self, job):
         """Extract the download url, update status, and
         file type from the job links"""
         pass
@@ -72,6 +73,20 @@ def get_todays_date():
     return yyyy, mm, dd
 
 
+def map_media_type(media_type):
+    _map = {
+        "application/x-bufr": "bufr",
+        "application/octet-stream": "bin",
+        "application/xml": "xml",
+        "image/jpeg": "jpeg",
+        "application/x-grib": "grib",
+        "application/grib;edition=2": "grib",
+        "text/plain": "txt"
+    }
+
+    return _map.get(media_type, 'bin')
+
+
 class VerificationMethods(enum.Enum):
     sha256 = 'sha256'
     sha384 = 'sha384'
@@ -82,22 +97,35 @@ class VerificationMethods(enum.Enum):
 
 
 class DownloadWorker(BaseDownloader):
-    def __init__(self, queue: BaseQueue, basepath: str = "."):
-        self.http = urllib3.PoolManager()
+    def __init__(self, queue: BaseQueue, basepath: str = ".", min_free_space=10):
+        timeout = urllib3.Timeout(connect=1.0)
+        self.http = urllib3.PoolManager(timeout=timeout)
         self.queue = queue
         self.basepath = Path(basepath)
+        self.min_free_space = min_free_space * 1073741824 # GBytes
+        self.status = "ready"
 
     def start(self) -> None:
         LOGGER.info("Starting download worker")
-        while not shutdown.is_set():
+        while not stop_event.is_set():
             # First get the job from the queue
             job = self.queue.dequeue()
-            if job.get('shutdown', None):
+            if job.get('shutdown', False):
                 break
 
-            self.process_job(job)
+            self.status = "running"
+            try:
+                self.process_job(job)
+            except Exception as e:
+                LOGGER.error(e)
 
+            self.status = "ready"
             self.queue.task_done()
+
+
+    def get_free_space(self):
+        total, used, free = shutil.disk_usage(self.basepath)
+        return free
 
     def process_job(self, job) -> None:
         yyyy, mm, dd = get_todays_date()
@@ -111,19 +139,21 @@ class DownloadWorker(BaseDownloader):
         expected_size = job.get('payload', {}).get('content', {}).get('size')
 
         # Get the download url, update status, and file type from the job links
-        _url, update, file_type = self.get_links(job)
+        _url, update, media_type = self.get_download_url(job)
 
         if _url is None:
             LOGGER.info(f"No download link found in job {job}")
             return
 
-        # Extract the filename and filename ending from the download link
-        filename, filename_ext = self.extract_filename(_url)
+        # map media type to file extension
+        file_type = map_media_type(media_type)
 
-        # If the file type is not in the links, use the filename extension
-        if file_type is None:
-            file_type = filename_ext
-
+        # Global caches can set whatever filename they want, we need to use
+        # the data_id for uniqueness. However, this can be unwieldy, hence use
+        # hash of data_id
+        data_id = job.get('payload', {}).get('properties', {}).get('data_id')
+        filename, _ = self.extract_filename(_url)
+        filename = filename + '.' + file_type
         target = output_dir / filename
         # Create parent dir if it doesn't exist
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -162,7 +192,15 @@ class DownloadWorker(BaseDownloader):
             FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
+        if self.min_free_space > 0:  # only check size if limit set
+            free_space = self.get_free_space()
+            if free_space < self.min_free_space:
+                LOGGER.warning(f"Too little free space, {free_space - filesize} < {self.min_free_space} , file {data_id} not saved")
+                FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
+                return
+
         if response is None:
+            FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
         # Use the hash function to determine whether to save the data
@@ -170,7 +208,7 @@ class DownloadWorker(BaseDownloader):
             response.data, expected_hash, hash_function, expected_size)
 
         if not save_data:
-            LOGGER.warning(f"Download {filename} failed verification, discarding")  # noqa
+            LOGGER.warning(f"Download {data_id} failed verification, discarding")  # noqa
             # Increment failed download counter
             FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
@@ -206,32 +244,28 @@ class DownloadWorker(BaseDownloader):
 
         return expected_hash, hash_function
 
-    def get_links(self, job) -> tuple:
+    def get_download_url(self, job) -> tuple:
         links = job.get('payload', {}).get('links', [])
         _url = None
         update = False
-        file_type = None
+        media_type = None
         for link in links:
             if link.get('rel') == 'update':
                 _url = link.get('href')
+                media_type = link.get('type')
                 update = True
                 break
             elif link.get('rel') == 'canonical':
                 _url = link.get('href')
-                app_type = link.get('type')
-                if app_type:
-                    # Remove '.../' prefix and, if present, 'x-' prefix
-                    file_type = app_type.split('/')[1].replace('x-', '')
+                media_type = link.get('type')
                 break
 
-        return _url, update, file_type
+        return _url, update, media_type
 
     def extract_filename(self, _url) -> tuple:
         path = urlsplit(_url).path
         filename = os.path.basename(path)
-
-        filename_ext = os.path.splitext(filename)[1][1:]
-
+        filename, filename_ext = os.path.splitext(filename)
         return filename, filename_ext
 
     def validate_data(self, data, expected_hash,
