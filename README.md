@@ -71,9 +71,11 @@ schema:
       type: string
       description: Path to write log files to.
       example: ./logs
-    max_disk_usage:
+    min_free_space:
       type: number
-      description: Maximum size (MB) for the download path specified by download_dir.
+      description: 
+        Minimum free space (GB) to leave on download volume / disk after download.
+        Files exceeding limit will not be saved.
       example: 10
     save_logs:
       type: boolean
@@ -101,7 +103,7 @@ An example is given below:
     "flask_host": "0.0.0.0",
     "flask_port": 5050,
     "log_path": "logs",
-    "max_disk_usage": 10,
+    "min_free_space": 10,
     "save_logs": false,
     "mqtt_session_info" : "mqtt_session.json"
 }

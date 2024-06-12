@@ -7,6 +7,7 @@ import os
 from datetime import datetime as dt
 from pathlib import Path
 import enum
+import shutil
 
 from wis2downloader import stop_event
 from wis2downloader.log import LOGGER
@@ -96,11 +97,12 @@ class VerificationMethods(enum.Enum):
 
 
 class DownloadWorker(BaseDownloader):
-    def __init__(self, queue: BaseQueue, basepath: str = ".", max_usage=10):
-        self.http = urllib3.PoolManager()
+    def __init__(self, queue: BaseQueue, basepath: str = ".", min_free_space=10):
+        timeout = urllib3.Timeout(connect=1.0)
+        self.http = urllib3.PoolManager(timeout=timeout)
         self.queue = queue
         self.basepath = Path(basepath)
-        self.max_usage = max_usage * 1024 * 1024
+        self.min_free_space = min_free_space * 1073741824 # GBytes
         self.status = "ready"
 
     def start(self) -> None:
@@ -120,13 +122,10 @@ class DownloadWorker(BaseDownloader):
             self.status = "ready"
             self.queue.task_done()
 
-    def get_disk_usage(self):
-        LOGGER.debug("Calculating disk usage...")
-        usage = 0
-        for paths, subdirs, files in os.walk(self.basepath):
-            for file_ in files:
-                usage += os.path.getsize(Path(paths) / file_)
-        return usage
+
+    def get_free_space(self):
+        total, used, free = shutil.disk_usage(self.basepath)
+        return free
 
     def process_job(self, job) -> None:
         yyyy, mm, dd = get_todays_date()
@@ -153,8 +152,8 @@ class DownloadWorker(BaseDownloader):
         # the data_id for uniqueness. However, this can be unwieldy, hence use
         # hash of data_id
         data_id = job.get('payload', {}).get('properties', {}).get('data_id')
-        filename = hashlib.sha256(data_id.encode('utf-8')).hexdigest() + "." + file_type
-
+        filename, _ = self.extract_filename(_url)
+        filename = filename + '.' + file_type
         target = output_dir / filename
         # Create parent dir if it doesn't exist
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -193,9 +192,10 @@ class DownloadWorker(BaseDownloader):
             FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
             return
 
-        if self.max_usage> 0:  # only check size if limit set
-            if self.get_disk_usage() + filesize > self.max_usage:
-                LOGGER.warning(f"Max disk usage exceeded {self.get_disk_usage() + filesize} > {self.max_usage} , file {data_id} not downloaded")
+        if self.min_free_space > 0:  # only check size if limit set
+            free_space = self.get_free_space()
+            if free_space < self.min_free_space:
+                LOGGER.warning(f"Too little free space, {free_space - filesize} < {self.min_free_space} , file {data_id} not saved")
                 FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
                 return
 
@@ -265,9 +265,7 @@ class DownloadWorker(BaseDownloader):
     def extract_filename(self, _url) -> tuple:
         path = urlsplit(_url).path
         filename = os.path.basename(path)
-
-        filename_ext = os.path.splitext(filename)[1][1:]
-
+        filename, filename_ext = os.path.splitext(filename)
         return filename, filename_ext
 
     def validate_data(self, data, expected_hash,

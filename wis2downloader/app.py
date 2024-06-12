@@ -24,7 +24,7 @@ from wis2downloader.utils.config import load_config
 CONFIG = load_config()
 
 
-setup_logger(loglevel = 'INFO',
+setup_logger(loglevel = 'DEBUG',
              save = CONFIG['save_logs'],
              log_path = CONFIG['log_path'])
 
@@ -37,9 +37,10 @@ jobQ = SimpleQueue()
 
 # Start workers to process the jobs from the queue
 worker_threads = []
+
 for idx in range(CONFIG['download_workers']):
     worker = DownloadWorker(jobQ, CONFIG['download_dir'],
-                            CONFIG['max_disk_usage'])
+                            CONFIG['min_free_space'])
     worker_thread = threading.Thread(target=worker.start, daemon=True)
     worker_threads.append(worker_thread)
     worker_thread.start()

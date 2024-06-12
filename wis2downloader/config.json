@@ -9,7 +9,7 @@
     "flask_host": "0.0.0.0",
     "flask_port": 5050,
     "log_path": "logs",
-    "max_disk_usage": 0,
+    "min_free_space": 1,
     "save_logs": false,
     "mqtt_session_info" : "mqtt_session.json",
     "validate_topics": true
