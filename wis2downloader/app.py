@@ -3,6 +3,7 @@ from pathlib import Path
 import threading
 from urllib.parse import unquote
 from uuid import uuid4
+import yaml
 
 import click
 
@@ -237,6 +238,16 @@ def delete_subscription(topic):
 def render_swagger():
     return render_template('swagger.html')
 
+
+@app.route('/openapi')
+def fetch_openapi():
+    p = Path(app.root_path) / 'static' / 'openapi.yaml'
+    with open(p) as fh:
+        openapi_doc = yaml.safe_load(fh)
+    openapi_doc['servers'] = [
+        {"url":CONFIG['base_url']}
+    ]
+    return jsonify(openapi_doc)
 
 @click.command()
 @click.pass_context

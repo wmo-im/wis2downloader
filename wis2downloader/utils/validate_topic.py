@@ -24,7 +24,7 @@ def validate_topic(topic) -> tuple:
     th = TopicHierarchy()
     is_valid = th.validate(topic, strict=False)
 
-    bad_topic_error = f"Invalid topic={topic} It should not contain special characters, backslashes, or escape codes"  # noqa
+    bad_topic_error = f"Invalid topic ({topic}), topic must validate against the WIS2 topic hierarchy."  # noqa
 
     if not is_valid:
         LOGGER.error(bad_topic_error)

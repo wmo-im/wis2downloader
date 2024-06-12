@@ -31,6 +31,11 @@ Create a file `config.json` in your local directory that conforms with the follo
 schema:
   type: object
   properties:
+    base_url:
+      type: string
+      description:
+        Base URL for the wis2downloader service. 
+      example: http://localhost:5050
     broker_hostname:
       type: string
       description: The hostname of the global broker to subscribe to.
@@ -97,6 +102,7 @@ An example is given below:
 
 ```json
 {
+    "base_url": "http://localhost:5050",
     "broker_hostname": "globalbroker.meteo.fr",
     "broker_password": "everyone",
     "broker_port": 443,
@@ -108,8 +114,8 @@ An example is given below:
     "flask_port": 5050,
     "log_path": "logs",
     "min_free_space": 10,
-    "save_logs": false,
     "mqtt_session_info" : "mqtt_session.json",
+    "save_logs": false,   
     "validate_topics": true
 }
 ```

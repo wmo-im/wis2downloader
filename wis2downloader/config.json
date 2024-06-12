@@ -1,4 +1,5 @@
 {
+    "base_url": "http://localhost:5050",
     "broker_hostname": "globalbroker.meteo.fr",
     "broker_password": "everyone",
     "broker_port": 443,
@@ -10,7 +11,7 @@
     "flask_port": 5050,
     "log_path": "logs",
     "min_free_space": 1,
-    "save_logs": false,
     "mqtt_session_info" : "mqtt_session.json",
+    "save_logs": false,
     "validate_topics": true
 }
