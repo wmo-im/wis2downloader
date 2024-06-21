@@ -12,6 +12,9 @@ def load_config():
         LOGGER.error("No config file specified, please set WIS2DOWNLOADER_CONFIG before running")
         raise RuntimeError(e)
 
+    if config_file is None:
+        raise ValueError("No config file specified, please set WIS2DOWNLOADER_CONFIG before running")
+
     config_file = Path(config_file)
 
     if not config_file.is_file():
