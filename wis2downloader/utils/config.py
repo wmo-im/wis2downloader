@@ -4,16 +4,18 @@ from pathlib import Path
 
 from wis2downloader.log import LOGGER
 
+
 def load_config():
 
     try:
         config_file = os.getenv('WIS2DOWNLOADER_CONFIG')
     except Exception as e:
-        LOGGER.error("No config file specified, please set WIS2DOWNLOADER_CONFIG before running")
+        LOGGER.error("No config file specified, please set WIS2DOWNLOADER_CONFIG before running") # noqa
         raise RuntimeError(e)
 
     if config_file is None:
-        raise ValueError("No config file specified, please set WIS2DOWNLOADER_CONFIG before running")
+        raise ValueError(
+            "WIS2DOWNLOADER_CONFIG must be set to an existing config file")
 
     config_file = Path(config_file)
 
