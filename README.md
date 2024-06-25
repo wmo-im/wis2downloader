@@ -139,6 +139,10 @@ export WIS2DOWNLOADER_CONFIG=<path_to_your_config_file>
 set WIS2DOWNLOADER_CONFIG=<path_to_your_config_file>
 ```
 
+*Windows (PowersShell)*
+```
+$env:WIS2DOWNLOADER_CONFIG = <path_to_your_config_file>
+```
 
 2. Start the downloader
 
