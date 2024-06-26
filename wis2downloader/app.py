@@ -5,19 +5,16 @@ from urllib.parse import unquote
 from uuid import uuid4
 import yaml
 
-import click
-
 from flask import Flask, request, jsonify, Response, render_template, abort, url_for
 
 from flask_cors import CORS
 from prometheus_client import generate_latest, REGISTRY
 
-
 from wis2downloader import stop_event
 from wis2downloader.downloader import DownloadWorker
 from wis2downloader.log import LOGGER, setup_logger
-from wis2downloader.queue import SimpleQueue, QMonitor
-from wis2downloader.subscriber import MQTTSubscriber, BaseSubscriber
+from wis2downloader.queue import SimpleQueue
+from wis2downloader.subscriber import MQTTSubscriber
 from wis2downloader.utils.validate_target import validate_target
 from wis2downloader.utils.validate_topic import validate_topic
 from wis2downloader.utils.config import load_config
@@ -250,12 +247,8 @@ def fetch_openapi():
     ]
     return jsonify(openapi_doc)
 
-@click.command()
-@click.pass_context
-def run(ctx):
+
+def run():
     app.run(debug=True, host=CONFIG['flask_host'], port=CONFIG['flask_port'], use_reloader=False)
     shutdown()
 
-
-if __name__ == '__main__':  # run locally, for testing
-    run()
