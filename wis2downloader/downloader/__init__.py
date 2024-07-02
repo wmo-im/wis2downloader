@@ -142,7 +142,7 @@ class DownloadWorker(BaseDownloader):
         _url, update, media_type = self.get_download_url(job)
 
         if _url is None:
-            LOGGER.info(f"No download link found in job {job}")
+            LOGGER.warning(f"No download link found in job {job}")
             return
 
         # map media type to file extension
