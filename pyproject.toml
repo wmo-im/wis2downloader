@@ -31,7 +31,7 @@ dynamic = ["version"]
 
 [project.scripts]
 
-wis2downloader = "wis2downloader:app.run"
+wis2downloader = "wis2downloader:cli.cli"
 
 [tool.setuptools.dynamic]
 version = {attr = "wis2downloader.__version__"}
