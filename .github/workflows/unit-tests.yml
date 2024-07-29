@@ -21,6 +21,31 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Create config file
+        run: |
+          echo '{
+            "base_url": "http://localhost:5050",
+            "broker_hostname": "globalbroker.meteo.fr",
+            "broker_password": "everyone",
+            "broker_port": 443,
+            "broker_protocol": "websockets",
+            "broker_username": "everyone",
+            "download_workers": 1,
+            "download_dir": "downloads",
+            "flask_host": "0.0.0.0",
+            "flask_port": 5050,
+            "log_level": "DEBUG",
+            "log_path": "logs",
+            "min_free_space": 10,
+            "mqtt_session_info" : "mqtt_session.json",
+            "save_logs": false,
+            "validate_topics": true
+          }' > config.json
+        shell: bash
+
+      - name: Set config environment variable
+        run: echo "WIS2DOWNLOADER_CONFIG=$PWD/config.json" >> $GITHUB_ENV
+
       - name: Install requirements 📦
         run: |
           python3 -m pip install --upgrade pip

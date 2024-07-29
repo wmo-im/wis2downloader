@@ -19,7 +19,7 @@ config = """
     "log_path": "logs",
     "min_free_space": 10,
     "mqtt_session_info" : "mqtt_session.json",
-    "save_logs": false,   
+    "save_logs": false,
     "validate_topics": true
 }
 """
