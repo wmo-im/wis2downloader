@@ -1,0 +1,38 @@
+name: Test Code Quality
+
+on: # yamllint disable-line rule:truthy
+  push: null
+  pull_request: null
+
+permissions: {}
+
+jobs:
+  build:
+    name: Test Code Quality
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+      # To report GitHub Actions status checks
+      statuses: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # super-linter needs the full git history to get the
+          # list of files that changed across commits
+          fetch-depth: 0
+
+      - name: Super-linter
+        uses: super-linter/super-linter@v6.7.0 # x-release-please-version
+        env:
+          VALIDATE_MARKDOWN: false
+          VALIDATE_JSCPD: false
+          VALIDATE_PYTHON_BLACK: false
+          VALIDATE_PYTHON_PYLINT: false
+          VALIDATE_PYTHON_ISORT: false
+          VALIDATE_PYTHON_FLAKE8: false
+          # To report GitHub Actions status checks
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

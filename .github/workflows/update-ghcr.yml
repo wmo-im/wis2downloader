@@ -12,6 +12,12 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
