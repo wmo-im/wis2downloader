@@ -26,16 +26,12 @@ config = """
 
 
 @pytest.fixture(scope='session', autouse=True)
-def set_config_env():
+def set_env():
     # Create a temporary file with the config content
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as tp:
         tp.write(config)
         tp.flush()
         os.environ['WIS2DOWNLOADER_CONFIG'] = tp.name
-    yield
-
-    # Cleanup: remove the temporary file after tests are done
-    os.remove(tp.name)
 
 
 @pytest.fixture()
