@@ -1,7 +1,14 @@
 # The WIS2 Downloader
 ### The backend tool for subscribing to the latest data on the WIS2 network.
 
-<a href="https://github.com/wmo-im/wis2-downloader/blob/main/LICENSE" alt="License" ><img src="https://img.shields.io/badge/License-Apache_2.0-blue"></img></a>
+<div align="center">
+
+  <a href="https://github.com/wmo-im/wis2downloader/blob/main/LICENSE" alt="License" ><img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="License Badge"></img></a>
+  [![Super-Linter](https://github.com/wmo-im/wis2downloader/actions/workflows/test-code-quality.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+  ![Unit-Tests](https://github.com/wmo-im/wis2downloader/actions/workflows/unit-tests.yml/badge.svg)
+  ![Update-GHCR](https://github.com/wmo-im/capvalidator/actions/workflows/update-ghcr.yml/badge.svg)
+
+</div>
 
 The WIS2 Downloader is a Flask-based Python application that allows you to connect to a WIS2 Global Broker, manage subscriptions to topic hierarchies, and configure their associated download directories.
 
