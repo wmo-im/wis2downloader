@@ -1,7 +1,7 @@
 import pytest
 import os
 import tempfile
-from wis2downloader.app import create_app
+from wis2downloader.app import app
 
 config = """
 {
@@ -24,29 +24,26 @@ config = """
 }
 """
 
-tp = tempfile.NamedTemporaryFile(delete=False)
-tp.write(config.encode())
-tp.close()
 
+@pytest.fixture(scope='session', autouse=True)
+def set_config_env():
+    # Create a temporary file with the config content
+    with tempfile.NamedTemporaryFile(delete=False, mode='w') as tp:
+        tp.write(config)
+        tp.flush()
+        os.environ['WIS2DOWNLOADER_CONFIG'] = tp.name
+    yield
 
-def pytest_generate_tests(metafunc):
-    os.environ['WIS2DOWNLOADER_CONFIG'] = tp.name
-
-
-@pytest.fixture()
-def app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True
-    })
-    yield app
+    # Cleanup: remove the temporary file after tests are done
+    os.remove(tp.name)
 
 
 @pytest.fixture()
-def client(app):
-    return app.test_client()
+def client():
+    with app.test_client() as client:
+        yield client
 
 
-@pytest.fixtuer()
-def runner(app):
+@pytest.fixture()
+def runner():
     return app.test_cli_runner()

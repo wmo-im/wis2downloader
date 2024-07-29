@@ -123,20 +123,8 @@ def shutdown():
 
 # Create and run Flask instance
 
-def create_app() -> Flask:
-    """
-    Creates the Flask app instance and enables Cross Origin support
-    """
-    app = Flask(__name__, instance_relative_config=True)
-    CORS(app)
-    return app
-
-
-def run():
-    app = create_app()
-    app.run(debug=True, host=CONFIG['flask_host'],
-            port=CONFIG['flask_port'], use_reloader=False)
-    shutdown()
+app = Flask(__name__, instance_relative_config=True)
+CORS(app)
 
 # Define routes
 
@@ -228,7 +216,7 @@ def delete_subscription(topic):
 
     # Topic validation
     if CONFIG['validate_topics']:
-        is_topic_valid, _ = validate_topic(topic)
+        is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
 
@@ -264,3 +252,9 @@ def fetch_openapi():
         {"url": CONFIG['base_url']}
     ]
     return jsonify(openapi_doc)
+
+
+def run():
+    app.run(debug=True, host=CONFIG['flask_host'],
+            port=CONFIG['flask_port'], use_reloader=False)
+    shutdown()
