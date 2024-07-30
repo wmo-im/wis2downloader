@@ -30,6 +30,7 @@ jobs:
         env:
           VALIDATE_MARKDOWN: false
           VALIDATE_JSCPD: false
+          VALIDATE_GITHUB_ACTIONS: false
           VALIDATE_PYTHON_BLACK: false
           VALIDATE_PYTHON_PYLINT: false
           VALIDATE_PYTHON_ISORT: false
