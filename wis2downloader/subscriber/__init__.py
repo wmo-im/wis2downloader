@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 import json
 from pathlib import Path
 import ssl
-from typing import Optional, Dict, Any, List
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 
