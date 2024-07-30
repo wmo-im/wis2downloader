@@ -33,13 +33,13 @@ jobs:
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.repository_owner }}
@@ -47,11 +47,11 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -61,35 +61,37 @@ jobs:
 
       - name: Create Dockerfile
         run: |
-          echo "FROM python:3.9-slim" > Dockerfile
-          echo "EXPOSE 8080" >> Dockerfile
-          echo "ENV DOWNLOAD_DIR /app/downloads" >> Dockerfile
-          echo "ENV RETENTION_PERIOD_HOURS 24" >> Dockerfile
-          echo "ENV BROKER_URL \"globalbroker.meteo.fr\"" >> Dockerfile
-          echo "ENV BROKER_PORT 443" >> Dockerfile
-          echo "ENV BROKER_USERNAME \"everyone\"" >> Dockerfile
-          echo "ENV BROKER_PASSWORD \"everyone\"" >> Dockerfile
-          echo "ENV BROKER_PROTOCOL \"websockets\"" >> Dockerfile
-          echo "ENV FLASK_HOST \"0.0.0.0\"" >> Dockerfile
-          echo "ENV FLASK_PORT 8080" >> Dockerfile
-          echo "ENV DOWNLOAD_WORKERS 8" >> Dockerfile
-          echo "ENV SAVE_LOGS false" >> Dockerfile
-          echo "ENV LOGS_DIR /app/logs" >> Dockerfile
-          echo "RUN pip install pyopenssl --upgrade && pip install requests==2.26.0 urllib3==1.26.0" >> Dockerfile
-          echo "RUN apt-get update && apt-get install -y cron gettext-base" >> Dockerfile
-          echo "COPY . /app" >> Dockerfile
-          echo "RUN pip install wis2downloader" >> Dockerfile
-          echo "WORKDIR /app" >> Dockerfile
-          echo "COPY ./docker/clean.py /app/clean.py" >> Dockerfile
-          echo "COPY ./docker/clean.cron /etc/cron.d/clean.cron" >> Dockerfile
-          echo "RUN chmod 0644 /etc/cron.d/clean.cron && crontab /etc/cron.d/clean.cron" >> Dockerfile
-          echo "COPY ./docker/entrypoint.sh /entrypoint.sh" >> Dockerfile
-          echo "RUN chmod +x /entrypoint.sh" >> Dockerfile
-          echo 'ENTRYPOINT [ "/entrypoint.sh" ]' >> Dockerfile
-          echo 'CMD ["wis2downloader","--config","/app/config.json"]' >> Dockerfile
+          cat <<EOF > Dockerfile
+          FROM python:3.9-slim
+          EXPOSE 8080
+          ENV DOWNLOAD_DIR /app/downloads
+          ENV RETENTION_PERIOD_HOURS 24
+          ENV BROKER_URL "globalbroker.meteo.fr"
+          ENV BROKER_PORT 443
+          ENV BROKER_USERNAME "everyone"
+          ENV BROKER_PASSWORD "everyone"
+          ENV BROKER_PROTOCOL "websockets"
+          ENV FLASK_HOST "0.0.0.0"
+          ENV FLASK_PORT 8080
+          ENV DOWNLOAD_WORKERS 8
+          ENV SAVE_LOGS false
+          ENV LOGS_DIR /app/logs
+          RUN pip install pyopenssl --upgrade && pip install requests==2.26.0 urllib3==1.26.0
+          RUN apt-get update && apt-get install -y cron gettext-base
+          COPY . /app
+          RUN pip install wis2downloader
+          WORKDIR /app
+          COPY ./docker/clean.py /app/clean.py
+          COPY ./docker/clean.cron /etc/cron.d/clean.cron
+          RUN chmod 0644 /etc/cron.d/clean.cron && crontab /etc/cron.d/clean.cron
+          COPY ./docker/entrypoint.sh /entrypoint.sh
+          RUN chmod +x /entrypoint.sh
+          ENTRYPOINT [ "/entrypoint.sh" ]
+          CMD ["wis2downloader","--config","/app/config.json"]
+          EOF
 
       - name: Build and push
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./Dockerfile

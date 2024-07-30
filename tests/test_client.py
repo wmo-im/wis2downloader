@@ -5,6 +5,9 @@ def test_expose_metrics(client):
     response = client.get('/metrics')
     assert response.status_code == 200
     assert response.mimetype == 'text/plain'
+    assert b'# HELP' in response.data
+    assert b'# TYPE' in response.data
+    assert b'metric_name' in response.data
 
 
 def test_list_subscriptions(client):

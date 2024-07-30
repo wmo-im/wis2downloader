@@ -1,6 +1,7 @@
 import re
 
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
+
 
 def validate_target(target) -> tuple:
     """

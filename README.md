@@ -173,7 +173,7 @@ with `Ctrl+C`.
 ## Maintaining and Monitoring Subscriptions
 
 The API defintion of the downloader can be found at the `/swagger` endpoint, when run locally see
-http://localhost:5050/swagger. this includes the ability to try out the different end points.
+http://localhost:5050/swagger. this includes the ability to try out the different endpoints.
 
 ### Adding subscriptions
 Subscriptions can be added via a POST request to the `/subscriptions` endpoint.
@@ -200,8 +200,8 @@ subscribed to, with the downloaded data written to the `surface-obs` subdirector
 
 Notes:
 1. If the `target` is not specified it will default to the topic the data are published on.
-1. The `+` wild card is used to specify any match at a single level, matching as WIS2 centre in the above example.
-1. The `#` wild card matches any topic at or below the level it occurs. In the above example any topic published below 
+1. The `+` wildcard is used to specify any match at a single level, matching as WIS2 centre in the above example.
+1. The `#` wildcard matches any topic at or below the level it occurs. In the above example any topic published below 
 cache/a/wis2/+/data/core/weather/surface-based-observations will be matched.
 
 #### Example CURL command:
@@ -227,11 +227,11 @@ to unsubscribe from.
 curl -X DELETE http://localhost:5050/subscriptions/cache/a/wis2/%2B/data/core/weather/%23
 ```
 
-This cancels the `cache/a/wis2/+/data/core/weather/#` subscription. Note the need to url encode the `+` (`%2B`) 
+This cancels the `cache/a/wis2/+/data/core/weather/#` subscription. Note the need to URL encode the `+` (`%2B`) 
 and `#` (`%23`) symbols.
 
 ### Listing subscriptions
-Current subscriptions can listed via a GET request to `/subscriptions` end point.
+Current subscriptions can listed via a GET request to `/subscriptions` endpoint.
 
 #### Example CURL command
 
@@ -242,7 +242,7 @@ curl http://localhost:5050/subscriptions
 The list of active subscriptions should be returned as a JSON object.
 
 ### Viewing download metrics
-Prometheus metrics for the downloader are found via a GET request to the `/metrics` end point.
+Prometheus metrics for the downloader are found via a GET request to the `/metrics` endpoint.
 
 #### Example CURL command
 

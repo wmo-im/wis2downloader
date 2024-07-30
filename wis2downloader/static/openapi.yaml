@@ -12,7 +12,7 @@ paths:
       summary: Returns list of subscribed topics
       description: Returns list of subscribed topics
       responses:
-        '200':
+        "200":
           description: A JSON object containing the subscribed topics
           content:
             application/json:
@@ -53,7 +53,7 @@ paths:
               required:
                 - topic
       responses:
-        '201':
+        "201":
           description: A JSON object containing the subscribed topic after specified topic subscribed to
           content:
             application/json:
@@ -69,11 +69,10 @@ paths:
                 required:
                   - target
                   - pattern
-        '400':
+        "400":
           description: Invalid input
-        '500':
+        "500":
           description: Internal server error
-
 
   /subscriptions/{topic}:
     delete:
@@ -87,11 +86,11 @@ paths:
             type: string
           required: true
       responses:
-        '200':
+        "200":
           description: Subscription successfully removed.
-        '400':
+        "400":
           description: Invalid topic specified
-        '404':
+        "404":
           description: Subscription not found.
     get:
       summary: Get information on specified subscription
@@ -104,7 +103,7 @@ paths:
             type: string
           required: true
       responses:
-        '200':
+        "200":
           description: A JSON object containing information on the subscribed topic.
           content:
             application/json:
@@ -120,9 +119,9 @@ paths:
                 required:
                   - target
                   - pattern
-        '400':
+        "400":
           description: Invalid topic.
-        '404':
+        "404":
           description: Subscription not found.
 
   /metrics:
@@ -130,7 +129,7 @@ paths:
       summary: Get of list of published metrics
       description: Get list of published metrics
       responses:
-        '200':
+        "200":
           description: List of published metrics suitable for integration with Prometheus
           content:
             text/plain:
