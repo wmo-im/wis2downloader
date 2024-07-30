@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: publish image to ghcr.io
+name: Publish Image to ghcr.io
 
 on:
   push:
