@@ -44,8 +44,9 @@ jobs:
         shell: bash
 
       - name: Set config environment variable
-        # shellcheck disable=SC2086
-        run: echo "WIS2DOWNLOADER_CONFIG=$PWD/config.json" >> $GITHUB_ENV
+        run: |
+          CONFIG_PATH="$PWD/config.json"
+          echo "WIS2DOWNLOADER_CONFIG=$CONFIG_PATH" >> $GITHUB_ENV
 
       - name: Install requirements 📦
         run: |
