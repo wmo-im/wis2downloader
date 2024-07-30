@@ -7,7 +7,11 @@ def test_expose_metrics(client):
     assert response.mimetype == 'text/plain'
     assert b'# HELP' in response.data
     assert b'# TYPE' in response.data
-    assert b'metric_name' in response.data
+    assert b'queue_size' in response.data
+    assert b'downloaded_bytes_total' in response.data
+    assert b'downloaded_files_total' in response.data
+    assert b'failed_downloads_total' in response.data
+    assert b'topic_subscription_status' in response.data
 
 
 def test_list_subscriptions(client):
