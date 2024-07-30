@@ -30,11 +30,11 @@ from pathlib import Path
 LOGGER = logging.getLogger(__name__)
 
 
-def setup_logger(loglevelname: str = 'ERROR', save=False, log_path=None) -> None:  # noqa
+def setup_logger(loglevel: str = 'ERROR', save=False, log_path=None) -> None:  # noqa
     """
     Setup logger
 
-    :param loglevelname: `str`, logging level name
+    :param loglevel: `str`, logging level name
     :param logfile: `str`, logging output file
 
     :returns: `None` (creates logging instance)
@@ -53,10 +53,10 @@ def setup_logger(loglevelname: str = 'ERROR', save=False, log_path=None) -> None
         'NOTSET': logging.NOTSET,
     }
 
-    loglevel = loglevels[loglevelname]
+    loglevel_value = loglevels[loglevel]
 
     args = {
-        'level': loglevel,
+        'level': loglevel_value,
         'datefmt': date_format,
         'format': log_format,
     }
