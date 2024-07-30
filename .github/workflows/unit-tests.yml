@@ -44,7 +44,7 @@ jobs:
         shell: bash
 
       - name: Set config environment variable
-        run: echo "WIS2DOWNLOADER_CONFIG=\"$PWD/config.json\"" >> $GITHUB_ENV
+        run: echo 'WIS2DOWNLOADER_CONFIG="$PWD/config.json"' >> $GITHUB_ENV
 
       - name: Install requirements 📦
         run: |
