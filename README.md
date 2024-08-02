@@ -6,7 +6,6 @@
   <a href="https://github.com/wmo-im/wis2downloader/blob/main/LICENSE" alt="License" ><img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="License Badge"></img></a>
   [![Super-Linter](https://github.com/wmo-im/wis2downloader/actions/workflows/test-code-quality.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
   ![Unit-Tests](https://github.com/wmo-im/wis2downloader/actions/workflows/unit-tests.yml/badge.svg)
-  ![Update-GHCR](https://github.com/wmo-im/capvalidator/actions/workflows/update-ghcr.yml/badge.svg)
 
 </div>
 
