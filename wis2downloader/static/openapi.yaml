@@ -140,7 +140,7 @@ paths:
 components:
   securitySchemes:
     wis2boxAuth:
-      type: http
+      type: https
       scheme: bearer
 security:
   - wis2boxAuth: []
