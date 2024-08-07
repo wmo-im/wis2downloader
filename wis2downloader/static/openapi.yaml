@@ -136,3 +136,11 @@ paths:
               schema:
                 type: string
                 description: List of metrics
+
+components:
+  securitySchemes:
+    wis2boxAuth:
+      type: http
+      scheme: bearer
+security:
+  - wis2boxAuth: []
