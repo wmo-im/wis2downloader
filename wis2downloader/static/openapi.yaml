@@ -18,20 +18,6 @@ paths:
             application/json:
               schema:
                 type: object
-                patternProperties:
-                  ".*":
-                    description: abc
-                    type: object
-                    properties:
-                      target:
-                        type: string
-                        description: Sub directory to save data downloaded data to
-                      pattern:
-                        type: string
-                        description: Pattern used to match topic
-                    required:
-                      - target
-                      - pattern
     post:
       summary: Subscribe to specified topic
       description: Subscribe to specified topic
