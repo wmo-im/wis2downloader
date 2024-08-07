@@ -3,6 +3,7 @@ from fnmatch import fnmatch
 import json
 from pathlib import Path
 import ssl
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 
@@ -45,7 +46,7 @@ class BaseSubscriber(ABC):
         pass
 
     @abstractmethod
-    def list_subscriptions(self) -> list:
+    def list_subscriptions(self) -> dict:
         """Method to return list of active subscriptions"""
         pass
 
@@ -63,8 +64,8 @@ class BaseSubscriber(ABC):
 class MQTTSubscriber(BaseSubscriber):
     def __init__(self, broker: str = "globalbroker.meteo.fr", port: int = 443,
                  uid: str = "everyone", pwd: str = "everyone",
-                 protocol: str = "websockets", _queue: BaseQueue = None,
-                 client_id: str = ''):
+                 protocol: str = "websockets",
+                 _queue: Optional[BaseQueue] = None, client_id: str = ''):
 
         LOGGER.warning("Initializing MQTT subscriber")
 
@@ -126,7 +127,8 @@ class MQTTSubscriber(BaseSubscriber):
 
         if target is None:
             # subscription no longer active, return
-            LOGGER.warning(f"Topic {msg.topic} not found in active subscriptions, skipping")
+            LOGGER.warning(
+                f"Topic {msg.topic} not found in active subscriptions, skipping")
             return
 
         if target == "$TOPIC":

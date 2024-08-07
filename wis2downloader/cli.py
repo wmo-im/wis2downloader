@@ -15,9 +15,10 @@ def run_dev(ctx):
     from wis2downloader.app import run
     run()
 
+
 @click.command('list-subscriptions')
-@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")
-@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")
+@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")  # noqa
+@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")  # noqa
 @click.pass_context
 def list_subscriptions(ctx, host, port):
     """list all subscriptions"""
@@ -40,8 +41,8 @@ def list_subscriptions(ctx, host, port):
 
 @click.command('add-subscription')
 @click.pass_context
-@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")
-@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")
+@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")  # noqa
+@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")  # noqa
 @click.option('--topic', '-t', help='The topic to subscribe to', required=True)
 def add_subscription(ctx, host, port, topic):
     """add a subscription"""
@@ -67,8 +68,8 @@ def add_subscription(ctx, host, port, topic):
 
 @click.command('remove-subscription')
 @click.pass_context
-@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")
-@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")
+@click.option("--host", type=click.STRING, required=False, default="localhost", help="Host the wis2downloader is running on")  # noqa
+@click.option("--port", type=click.INT, required=False, default=5000, help="Port the wis2downloader is running on")  # noqa
 @click.option('--topic', '-t', help='The topic to subscribe to', required=True)
 def remove_subscription(ctx, host, port, topic):
     """remove a subscription"""

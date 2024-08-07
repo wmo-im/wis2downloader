@@ -22,19 +22,19 @@
 # https://github.com/wmo-im/wis2box/blob/main/wis2box-management/wis2box/log.py
 ###############################################################################
 
-from datetime import datetime as dt
 import logging
-from pathlib import Path
 import sys
+from datetime import datetime as dt
+from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
 
-def setup_logger(loglevel: str = 'ERROR', save=False, log_path = None) -> None:
+def setup_logger(loglevel: str = 'ERROR', save=False, log_path=None) -> None:  # noqa
     """
     Setup logger
 
-    :param loglevel: `str`, logging level
+    :param loglevel: `str`, logging level name
     :param logfile: `str`, logging output file
 
     :returns: `None` (creates logging instance)
@@ -53,10 +53,10 @@ def setup_logger(loglevel: str = 'ERROR', save=False, log_path = None) -> None:
         'NOTSET': logging.NOTSET,
     }
 
-    loglevel = loglevels[loglevel]
+    loglevel_value = loglevels[loglevel]
 
     args = {
-        'level': loglevel,
+        'level': loglevel_value,
         'datefmt': date_format,
         'format': log_format,
     }
@@ -67,9 +67,9 @@ def setup_logger(loglevel: str = 'ERROR', save=False, log_path = None) -> None:
         if log_path is None:
             log_path = "."
         logfile = 'wis2downloader' + current_time + '.log'
-        logfile = Path(log_path) / logfile
-        logfile.parent.mkdir(parents=True, exist_ok=True)
-        args['filename'] = logfile
+        logfile_path = Path(log_path) / logfile
+        logfile_path.parent.mkdir(parents=True, exist_ok=True)
+        args['filename'] = str(logfile_path)
     else:
         args['stream'] = sys.stdout
 
