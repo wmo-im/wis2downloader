@@ -5,7 +5,7 @@ info:
   version: 0.1.dev2
   description: API definition
 servers:
-  - url: http://127.0.0.1:5050
+  - url: https://127.0.0.1:5050
 paths:
   /subscriptions:
     get:
@@ -126,7 +126,7 @@ paths:
 components:
   securitySchemes:
     wis2boxAuth:
-      type: https
+      type: http
       scheme: bearer
 security:
   - wis2boxAuth: []
