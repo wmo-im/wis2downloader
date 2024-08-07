@@ -6,6 +6,7 @@ info:
   description: API definition
 servers:
   - url: https://127.0.0.1:5050
+    description: Local development server
 paths:
   /subscriptions:
     get:
