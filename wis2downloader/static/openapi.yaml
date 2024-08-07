@@ -138,3 +138,6 @@ components:
     wis2boxAuth:
       type: http
       scheme: bearer
+
+security:
+  - wis2boxAuth: [ ]
