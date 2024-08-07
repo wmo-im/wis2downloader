@@ -11,6 +11,8 @@ paths:
     get:
       summary: Returns list of subscribed topics
       description: Returns list of subscribed topics
+      security:
+        - wis2boxAuth: [ ]
       responses:
         "200":
           description: A JSON object containing the subscribed topics
@@ -21,6 +23,8 @@ paths:
     post:
       summary: Subscribe to specified topic
       description: Subscribe to specified topic
+      security:
+        - wis2boxAuth: [ ]
       requestBody:
         required: true
         content:
@@ -64,6 +68,8 @@ paths:
     delete:
       summary: Unsubscribe from specified topic
       description: Unsubscribe from specified topic
+      security:
+        - wis2boxAuth: [ ]
       parameters:
         - in: path
           name: topic
@@ -81,6 +87,8 @@ paths:
     get:
       summary: Get information on specified subscription
       description: Get information on specified subscription
+      security:
+        - wis2boxAuth: [ ]
       parameters:
         - in: path
           name: topic
@@ -114,6 +122,8 @@ paths:
     get:
       summary: Get of list of published metrics
       description: Get list of published metrics
+      security:
+        - wis2boxAuth: [ ]
       responses:
         "200":
           description: List of published metrics suitable for integration with Prometheus
@@ -128,5 +138,3 @@ components:
     wis2boxAuth:
       type: http
       scheme: bearer
-security:
-  - wis2boxAuth: []
