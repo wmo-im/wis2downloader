@@ -22,25 +22,25 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Create config file
-        run: |
+        run: "\n
           echo '{
-            "base_url": "http://localhost:5050",
-            "broker_hostname": "globalbroker.meteo.fr",
-            "broker_password": "everyone",
-            "broker_port": 443,
-            "broker_protocol": "websockets",
-            "broker_username": "everyone",
-            "download_workers": 1,
-            "download_dir": "downloads",
-            "flask_host": "0.0.0.0",
-            "flask_port": 5050,
-            "log_level": "DEBUG",
-            "log_path": "logs",
-            "min_free_space": 10,
-            "mqtt_session_info" : "mqtt_session.json",
-            "save_logs": false,
-            "validate_topics": true
-          }' > config.json
+            \"base_url\": \"http://localhost:5050\",\n
+            \"broker_hostname\": \"globalbroker.meteo.fr\",\n
+            \"broker_password\": \"everyone\",\n
+            \"broker_port\": 443,\n
+            \"broker_protocol\": \"websockets\",\n
+            \"broker_username\": \"everyone\",\n
+            \"download_workers\": 1,\n
+            \"download_dir\": \"downloads\",\n
+            \"flask_host\": \"0.0.0.0\",\n
+            \"flask_port\": 5050,\n
+            \"log_level\": \"DEBUG\",\n
+            \"log_path\": \"logs\",\n
+            \"min_free_space\": 10,\n
+            \"mqtt_session_info\" : \"mqtt_session.json\",\n
+            \"save_logs\": false,\n
+            \"validate_topics\": true\n
+          }' > config.json"
         shell: bash
 
       - name: Set config environment variable
