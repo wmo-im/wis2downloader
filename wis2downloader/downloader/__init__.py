@@ -97,12 +97,12 @@ class VerificationMethods(enum.Enum):
 
 
 class DownloadWorker(BaseDownloader):
-    def __init__(self, queue: BaseQueue, basepath: str = ".", min_free_space=10):
+    def __init__(self, queue: BaseQueue, basepath: str = ".", min_free_space=10):  # noqa
         timeout = urllib3.Timeout(connect=1.0)
         self.http = urllib3.PoolManager(timeout=timeout)
         self.queue = queue
         self.basepath = Path(basepath)
-        self.min_free_space = min_free_space * 1073741824 # GBytes
+        self.min_free_space = min_free_space * 1073741824  # GBytes
         self.status = "ready"
 
     def start(self) -> None:
@@ -121,7 +121,6 @@ class DownloadWorker(BaseDownloader):
 
             self.status = "ready"
             self.queue.task_done()
-
 
     def get_free_space(self):
         total, used, free = shutil.disk_usage(self.basepath)
@@ -195,7 +194,7 @@ class DownloadWorker(BaseDownloader):
         if self.min_free_space > 0:  # only check size if limit set
             free_space = self.get_free_space()
             if free_space < self.min_free_space:
-                LOGGER.warning(f"Too little free space, {free_space - filesize} < {self.min_free_space} , file {data_id} not saved")
+                LOGGER.warning(f"Too little free space, {free_space - filesize} < {self.min_free_space} , file {data_id} not saved")  # noqa
                 FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
                 return
 
