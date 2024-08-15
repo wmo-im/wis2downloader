@@ -1,7 +1,8 @@
 from pywis_topics.topics import TopicHierarchy
 from pywis_topics.bundle import sync_bundle
 
-from wis2downloader.log import LOGGER, setup_logger
+from wis2downloader.log import LOGGER
+
 
 def validate_topic(topic) -> tuple:
     """

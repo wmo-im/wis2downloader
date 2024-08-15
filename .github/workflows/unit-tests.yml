@@ -1,0 +1,58 @@
+name: Unit Tests ⚙️
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        name: Setup Python ${{ matrix.python-version }}
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create config file
+        run: |
+          echo '{
+            "base_url": "http://localhost:5050",
+            "broker_hostname": "globalbroker.meteo.fr",
+            "broker_password": "everyone",
+            "broker_port": 443,
+            "broker_protocol": "websockets",
+            "broker_username": "everyone",
+            "download_workers": 1,
+            "download_dir": "downloads",
+            "flask_host": "0.0.0.0",
+            "flask_port": 5050,
+            "log_level": "DEBUG",
+            "log_path": "logs",
+            "min_free_space": 10,
+            "mqtt_session_info" : "mqtt_session.json",
+            "save_logs": false,
+            "validate_topics": true
+          }' > config.json
+        shell: bash
+
+      - name: Set config environment variable
+        run: |
+          CONFIG_PATH="$PWD/config.json"
+          echo "WIS2DOWNLOADER_CONFIG=$CONFIG_PATH" >> "$GITHUB_ENV"
+
+      - name: Install requirements 📦
+        run: |
+          python3 -m pip install --upgrade pip 
+          pip3 install . 
+          pip3 install -r requirements-dev.txt
+      - name: run tests ⚙️
+        run: |
+          pytest

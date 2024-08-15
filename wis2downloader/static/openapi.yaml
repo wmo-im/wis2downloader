@@ -5,36 +5,27 @@ info:
   version: 0.1.dev2
   description: API definition
 servers:
-  - url: http://127.0.0.1:5050
+  - url: https://127.0.0.1:5050
+    description: Local development server
 paths:
   /subscriptions:
     get:
       summary: Returns list of subscribed topics
       description: Returns list of subscribed topics
+      security:
+        - wis2boxAuth: [ ]
       responses:
-        '200':
+        "200":
           description: A JSON object containing the subscribed topics
           content:
             application/json:
               schema:
                 type: object
-                patternProperties:
-                  ".*":
-                    description: abc
-                    type: object
-                    properties:
-                      target:
-                        type: string
-                        description: Sub directory to save data downloaded data to
-                      pattern:
-                        type: string
-                        description: Pattern used to match topic
-                    required:
-                      - target
-                      - pattern
     post:
       summary: Subscribe to specified topic
       description: Subscribe to specified topic
+      security:
+        - wis2boxAuth: [ ]
       requestBody:
         required: true
         content:
@@ -53,7 +44,7 @@ paths:
               required:
                 - topic
       responses:
-        '201':
+        "201":
           description: A JSON object containing the subscribed topic after specified topic subscribed to
           content:
             application/json:
@@ -69,16 +60,17 @@ paths:
                 required:
                   - target
                   - pattern
-        '400':
+        "400":
           description: Invalid input
-        '500':
+        "500":
           description: Internal server error
-
 
   /subscriptions/{topic}:
     delete:
       summary: Unsubscribe from specified topic
       description: Unsubscribe from specified topic
+      security:
+        - wis2boxAuth: [ ]
       parameters:
         - in: path
           name: topic
@@ -87,15 +79,17 @@ paths:
             type: string
           required: true
       responses:
-        '200':
+        "200":
           description: Subscription successfully removed.
-        '400':
+        "400":
           description: Invalid topic specified
-        '404':
+        "404":
           description: Subscription not found.
     get:
       summary: Get information on specified subscription
       description: Get information on specified subscription
+      security:
+        - wis2boxAuth: [ ]
       parameters:
         - in: path
           name: topic
@@ -104,7 +98,7 @@ paths:
             type: string
           required: true
       responses:
-        '200':
+        "200":
           description: A JSON object containing information on the subscribed topic.
           content:
             application/json:
@@ -120,20 +114,31 @@ paths:
                 required:
                   - target
                   - pattern
-        '400':
+        "400":
           description: Invalid topic.
-        '404':
+        "404":
           description: Subscription not found.
 
   /metrics:
     get:
       summary: Get of list of published metrics
       description: Get list of published metrics
+      security:
+        - wis2boxAuth: [ ]
       responses:
-        '200':
+        "200":
           description: List of published metrics suitable for integration with Prometheus
           content:
             text/plain:
               schema:
                 type: string
                 description: List of metrics
+
+components:
+  securitySchemes:
+    wis2boxAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - wis2boxAuth: [ ]

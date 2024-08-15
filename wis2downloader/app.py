@@ -22,9 +22,9 @@ from wis2downloader.utils.config import load_config
 CONFIG = load_config()
 
 
-setup_logger(loglevel = CONFIG['log_level'],
-             save = CONFIG['save_logs'],
-             log_path = CONFIG['log_path'])
+setup_logger(loglevel=CONFIG['log_level'],
+             save=CONFIG['save_logs'],
+             log_path=CONFIG['log_path'])
 
 # Create the queue
 jobQ = SimpleQueue()
@@ -98,6 +98,8 @@ for topic, target in session_info['topics'].items():
 
 # Provided the app.run() call is blocking, the following code will only
 # be executed when the Flask app is stopped
+
+
 def shutdown():
     LOGGER.info("Shutting down")
 
@@ -119,18 +121,21 @@ def shutdown():
         worker.join()
 
 
-# Create flask instance
+# Create and run Flask instance
+
 app = Flask(__name__, instance_relative_config=True)
-# enable cross origin support
 CORS(app)
 
 # Define routes
+
+
 @app.route('/metrics')
 def expose_metrics():
     """
     Expose the Prometheus metrics to be scraped.
     """
     return Response(generate_latest(REGISTRY), mimetype="text/plain")
+
 
 @app.get('/subscriptions')
 def list_subscriptions():
@@ -145,7 +150,7 @@ def add_subscription():
         abort(400, "Invalid input")
 
     data = request.json
-    topic = unquote( data.get("topic") )
+    topic = unquote(data.get("topic"))
     LOGGER.info(f"Subscribing to {topic}")
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
@@ -174,16 +179,17 @@ def add_subscription():
     session_info['topics'][topic] = target
 
     try:
-        with open(CONFIG['mqtt_session_info'],'w') as fh:
+        with open(CONFIG['mqtt_session_info'], 'w') as fh:
             json.dump(session_info, fh)
-    except Exception as e:
+    except Exception:
         abort(500, "Internal server error")
 
     response = jsonify(subs[topic])
     response.status_code = 201
-    response.headers['Location'] = url_for('get_subscription',topic=topic)
+    response.headers['Location'] = url_for('get_subscription', topic=topic)
 
     return response
+
 
 @app.get('/subscriptions/<path:topic>')
 def get_subscription(topic):
@@ -196,12 +202,12 @@ def get_subscription(topic):
         is_topic_valid = True
 
     if not is_topic_valid:
-        abort(400,f"Invalid input ({msg})")
+        abort(400, f"Invalid input ({msg})")
 
     if topic not in subscriber.active_subscriptions:
         abort(404, "Subscription not found")
 
-    return jsonify( subscriber.active_subscriptions[topic])
+    return jsonify(subscriber.active_subscriptions[topic])
 
 
 @app.delete('/subscriptions/<path:topic>')
@@ -210,12 +216,12 @@ def delete_subscription(topic):
 
     # Topic validation
     if CONFIG['validate_topics']:
-        is_topic_valid, _ = validate_topic(topic)
+        is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
 
     if not is_topic_valid:
-        abort(400,f"Invalid input ({msg})")
+        abort(400, f"Invalid input ({msg})")
 
     if topic not in subscriber.active_subscriptions:
         abort(404, "Subscription not found")
@@ -224,7 +230,7 @@ def delete_subscription(topic):
 
     del session_info['topics'][topic]
 
-    with open(CONFIG['mqtt_session_info'],'w') as fh:
+    with open(CONFIG['mqtt_session_info'], 'w') as fh:
         json.dump(session_info, fh)
 
     return Response(response=json.dumps(subs), status=200,
@@ -243,12 +249,12 @@ def fetch_openapi():
     with open(p) as fh:
         openapi_doc = yaml.safe_load(fh)
     openapi_doc['servers'] = [
-        {"url":CONFIG['base_url']}
+        {"url": CONFIG['base_url']}
     ]
     return jsonify(openapi_doc)
 
 
 def run():
-    app.run(debug=True, host=CONFIG['flask_host'], port=CONFIG['flask_port'], use_reloader=False)
+    app.run(debug=True, host=CONFIG['flask_host'],
+            port=CONFIG['flask_port'], use_reloader=False)
     shutdown()
-
