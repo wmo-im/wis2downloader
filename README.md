@@ -1,5 +1,5 @@
 # The WIS2 Downloader
-### The backend tool for subscribing to the latest data on the WIS2 network.
+## The backend tool for subscribing to the latest data on the WIS2 network
 
 <div align="center">
 
@@ -21,7 +21,7 @@ The WIS2 Downloader is a Flask-based Python application that allows you to conne
 
 ### 1. Installation
 
-__NOTE__: The downloader has not yet been uploaded to PyPI and needs to be installed directly from GitHub:
+**NOTE**: The downloader has not yet been uploaded to PyPI and needs to be installed directly from GitHub:
 
 ```bash
 pip install https://github.com/wmo-im/wis2downloader/archive/main.zip
@@ -40,7 +40,7 @@ schema:
     base_url:
       type: string
       description:
-        Base URL for the wis2downloader service. 
+        Base URL for the wis2downloader service.
       example: http://localhost:5050
     broker_hostname:
       type: string
@@ -48,7 +48,7 @@ schema:
       example: globalbroker.meteo.fr
     broker_password:
       type: string
-      description: The password to use when connecting to the specified global broker.      
+      description: The password to use when connecting to the specified global broker.
       example: everyone
     broker_port:
       type: number
@@ -88,7 +88,7 @@ schema:
       example: ./logs
     min_free_space:
       type: number
-      description: 
+      description:
         Minimum free space (GB) to leave on download volume / disk after download.
         Files exceeding limit will not be saved.
       example: 10
@@ -98,8 +98,8 @@ schema:
       example: false
     mqtt_session_info:
       type: string
-      description: 
-        File to save session information (active subscriptions and MQTT client id) to. 
+      description:
+        File to save session information (active subscriptions and MQTT client id) to.
         Used to persist subscriptions on restart.
       example: mqtt_session.json
     validate_topics:
@@ -126,7 +126,7 @@ An example is given below:
     "log_path": "logs",
     "min_free_space": 10,
     "mqtt_session_info" : "mqtt_session.json",
-    "save_logs": false,   
+    "save_logs": false,
     "validate_topics": true
 }
 ```
@@ -135,18 +135,18 @@ An example is given below:
 
 1. Set an environment variable specifying the path to the config.json file.
 
-*Linux (bash)* 
+*Linux (bash)*
 ```bash
-export WIS2DOWNLOADER_CONFIG=<path_to_your_config_file> 
+export WIS2DOWNLOADER_CONFIG=<path_to_your_config_file>
 ```
 
 *Windows (Command Prompt)*
-```
+```shell
 set WIS2DOWNLOADER_CONFIG=<path_to_your_config_file>
 ```
 
 *Windows (PowersShell)*
-```
+```shell
 $env:WIS2DOWNLOADER_CONFIG = <path_to_your_config_file>
 ```
 
@@ -159,24 +159,24 @@ wis2downloader
 ```
 
 *Using gunicorn (Linux only)*
-```
+```bash
 gunicorn --bind 0.0.0.0:5050 -w 1 wis2downloader.app:app
 ```
 
 **Note**: Only one worker is supported due to the downloader spawning additional threads and persistence of MQTT
 connections.
 
-The Flask application should now be running. If you need to stop the application, you can do so in the terminal 
-with `Ctrl+C`.
+The Flask application should now be running. If you need to stop the application,
+ you can do so in the terminal with `Ctrl+C`.
 
 ## Maintaining and Monitoring Subscriptions
 
 The API defintion of the downloader can be found at the `/swagger` endpoint, when run locally see
-http://localhost:5050/swagger. this includes the ability to try out the different endpoints.
+[http://localhost:5050/swagger]. this includes the ability to try out the different endpoints.
 
 ### Adding subscriptions
 Subscriptions can be added via a POST request to the `/subscriptions` endpoint.
-The request body should be JSON-encoded and adhere to the following schema: 
+The request body should be JSON-encoded and adhere to the following schema:
 
 ```yaml
 schema:
@@ -194,14 +194,14 @@ schema:
     - topic
 ```
 
-In this example all notifications published to the `surface-based-observations` topic from any WIS2 centre will be 
-subscribed to, with the downloaded data written to the `surface-obs` subdirectory of the `download_dir`. 
+In this example all notifications published to the `surface-based-observations` topic from any WIS2 centre will be
+ subscribed to, with the downloaded data written to the `surface-obs` subdirectory of the `download_dir`.
 
 Notes:
 1. If the `target` is not specified it will default to the topic the data are published on.
 1. The `+` wildcard is used to specify any match at a single level, matching as WIS2 centre in the above example.
-1. The `#` wildcard matches any topic at or below the level it occurs. In the above example any topic published below 
-cache/a/wis2/+/data/core/weather/surface-based-observations will be matched.
+1. The `#` wildcard matches any topic at or below the level it occurs. In the above example any topic published below
+ cache/a/wis2/+/data/core/weather/surface-based-observations will be matched.
 
 #### Example CURL command:
 
@@ -217,8 +217,8 @@ curl -X 'POST' \
 ```
 
 ### Deleting subscriptions
-Subscriptions are deleted via a DELETE request to the `/subscriptions/{topic}` endpoint where `{topic}` is the topic 
-to unsubscribe from. 
+Subscriptions are deleted via a DELETE request to the `/subscriptions/{topic}` endpoint where `{topic}` is the topic
+ to unsubscribe from.
 
 #### Example CURL command
 
@@ -226,13 +226,13 @@ to unsubscribe from.
 curl -X DELETE http://localhost:5050/subscriptions/cache/a/wis2/%2B/data/core/weather/%23
 ```
 
-This cancels the `cache/a/wis2/+/data/core/weather/#` subscription. Note the need to URL encode the `+` (`%2B`) 
-and `#` (`%23`) symbols.
+This cancels the `cache/a/wis2/+/data/core/weather/#` subscription. Note the need to URL encode the `+` (`%2B`)
+ and `#` (`%23`) symbols.
 
 ### Listing subscriptions
 Current subscriptions can listed via a GET request to `/subscriptions` endpoint.
 
-#### Example CURL command
+#### Example CURL command to list subscriptions
 
 ```bash
 curl http://localhost:5050/subscriptions
@@ -243,7 +243,7 @@ The list of active subscriptions should be returned as a JSON object.
 ### Viewing download metrics
 Prometheus metrics for the downloader are found via a GET request to the `/metrics` endpoint.
 
-#### Example CURL command
+#### Example CURL command to view download metrics
 
 ```bash
 curl http://localhost:5050/metrics
