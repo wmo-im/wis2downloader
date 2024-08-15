@@ -44,15 +44,14 @@ jobs:
         shell: bash
 
       - name: Set config environment variable
-        run: |
-          CONFIG_PATH="$PWD/config.json"
-          echo "WIS2DOWNLOADER_CONFIG=$CONFIG_PATH" >> $GITHUB_ENV
+        run: "
+          CONFIG_PATH=\"$PWD/config.1json\"\n
+          echo \"WIS2DOWNLOADER_CONFIG=$CONFIG_PATH\" >> $GITHUB_ENV"
 
       - name: Install requirements 📦
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install .
-          pip3 install -r requirements-dev.txt
+        run: "
+          python3 -m pip install --upgrade pip \n
+          pip3 install . \n
+          pip3 install -r requirements-dev.txt"
       - name: run tests ⚙️
-        run: |
-          pytest
+        run: pytest
