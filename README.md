@@ -203,7 +203,7 @@ Notes:
 1. The `#` wildcard matches any topic at or below the level it occurs. In the above example any topic published below
  cache/a/wis2/+/data/core/weather/surface-based-observations will be matched.
 
-#### Example CURL command:
+#### Example CURL command to add subscription
 
 ```bash
 curl -X 'POST' \
@@ -220,7 +220,7 @@ curl -X 'POST' \
 Subscriptions are deleted via a DELETE request to the `/subscriptions/{topic}` endpoint where `{topic}` is the topic
  to unsubscribe from.
 
-#### Example CURL command
+#### Example CURL command to delete subscription
 
 ```bash
 curl -X DELETE http://localhost:5050/subscriptions/cache/a/wis2/%2B/data/core/weather/%23
