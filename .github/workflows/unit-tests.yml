@@ -22,36 +22,37 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Create config file
-        run: "\n
+        run: |
           echo '{
-            \"base_url\": \"http://localhost:5050\",\n
-            \"broker_hostname\": \"globalbroker.meteo.fr\",\n
-            \"broker_password\": \"everyone\",\n
-            \"broker_port\": 443,\n
-            \"broker_protocol\": \"websockets\",\n
-            \"broker_username\": \"everyone\",\n
-            \"download_workers\": 1,\n
-            \"download_dir\": \"downloads\",\n
-            \"flask_host\": \"0.0.0.0\",\n
-            \"flask_port\": 5050,\n
-            \"log_level\": \"DEBUG\",\n
-            \"log_path\": \"logs\",\n
-            \"min_free_space\": 10,\n
-            \"mqtt_session_info\" : \"mqtt_session.json\",\n
-            \"save_logs\": false,\n
-            \"validate_topics\": true\n
-          }' > config.json"
+            "base_url": "http://localhost:5050",
+            "broker_hostname": "globalbroker.meteo.fr",
+            "broker_password": "everyone",
+            "broker_port": 443,
+            "broker_protocol": "websockets",
+            "broker_username": "everyone",
+            "download_workers": 1,
+            "download_dir": "downloads",
+            "flask_host": "0.0.0.0",
+            "flask_port": 5050,
+            "log_level": "DEBUG",
+            "log_path": "logs",
+            "min_free_space": 10,
+            "mqtt_session_info" : "mqtt_session.json",
+            "save_logs": false,
+            "validate_topics": true
+          }' > config.json
         shell: bash
 
       - name: Set config environment variable
-        run: "
-          CONFIG_PATH=\"$PWD/config.1json\"\n
-          echo \"WIS2DOWNLOADER_CONFIG=$CONFIG_PATH\" >> $GITHUB_ENV"
+        run: |
+          CONFIG_PATH="$PWD/config.1json"
+          echo "WIS2DOWNLOADER_CONFIG=$CONFIG_PATH" >> $GITHUB_ENV"
 
       - name: Install requirements 📦
-        run: "
-          python3 -m pip install --upgrade pip \n
-          pip3 install . \n
-          pip3 install -r requirements-dev.txt"
+        run: |
+          python3 -m pip install --upgrade pip 
+          pip3 install . 
+          pip3 install -r requirements-dev.txt
       - name: run tests ⚙️
-        run: pytest
+        run: |
+          pytest
