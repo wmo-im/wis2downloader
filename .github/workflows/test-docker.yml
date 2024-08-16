@@ -11,9 +11,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Build test environment
         run: |
-          pwd
-          ls
-          cd wis2-downloader/docker/tests
+          cd docker/tests
           docker compose build
       - name: Run containers
         run: |
