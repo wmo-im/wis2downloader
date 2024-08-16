@@ -38,19 +38,25 @@ jobs:
         run: |
           # get metrics
           curl http://localhost:5000/metrics          
-          # test adding a subscription
-          # docker exec subscriber wis2downloader add-subscription --topic cache/a/wis2/+/services/# 
+          # test adding a subscription          
+          curl -X 'POST' \
+            'http://localhost:5000/subscriptions' \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d '{
+                "topic": "cache/a/wis2/+/services/#"
+            }'           
           # test listing subscriptions
-          # docker exec subscriber wis2downloader list-subscriptions
+          curl http://localhost:5000/subscriptions          
           # publish a test message
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
             -i test -u "http://subscriber:5000/metrics"
           sleep 1s
           # cat file contents
-          #cat ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/openapi.bin
+          ls ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/
           # test deleting subscriptions
-          #docker exec subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/#
+          curl -X DELETE http://localhost:5000/subscriptions/cache/a/wis2/%2B/services/%23
       - name: Shutdown
         working-directory: docker/tests
         run: |
