@@ -16,9 +16,9 @@ ENV WIS2DOWNLOADER_CONFIG "/app/config/config.json"
 # Update / upgrade
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base
+    apt-get install -y gettext-base curl
 
-    # install python dependencies
+# install python dependencies
 RUN python -m pip install gunicorn requests wis2downloader
 
 # upgrade certs

@@ -239,7 +239,6 @@ def delete_subscription(topic):
 
 @app.route('/swagger')
 def render_swagger():
-
     return render_template('swagger.html', )
 
 
@@ -252,6 +251,11 @@ def fetch_openapi():
         {"url": CONFIG['base_url']}
     ]
     return jsonify(openapi_doc)
+
+@app.route('/health')
+def health_check():
+    return Response(response=json.dumps({'status':'healthy'}), status=200,
+                    mimetype="application/json")
 
 
 def run():
