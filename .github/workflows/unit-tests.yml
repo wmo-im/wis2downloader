@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.8"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,7 +51,7 @@ jobs:
       - name: Install requirements 📦
         run: |
           python3 -m pip install --upgrade pip 
-          pip3 install . 
+          pip3 install --no-cache . 
           pip3 install -r requirements-dev.txt
       - name: run tests ⚙️
         run: |
