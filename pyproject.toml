@@ -2,6 +2,10 @@
 requires  = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["wis2downloader"]
+exclude = ["docker", "tests"]
+
 [project]
 name = "wis2downloader"
 authors = [
