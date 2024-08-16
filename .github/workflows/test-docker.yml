@@ -10,15 +10,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build test environment
+        working-directory: docker/tests
         run: |
-          cd docker/tests
           docker compose build
       - name: Run containers
+        working-directory: docker/tests
         run: |
           docker compose up -d
       - name: Run tests
         run: |
           docker exec subscriber wis2downloader list-subscriptions
       - name: Shutdown
+        working-directory: docker/tests
         run: |
           docker compose down
