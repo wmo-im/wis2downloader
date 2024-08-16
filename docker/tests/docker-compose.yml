@@ -16,6 +16,8 @@ services:
         - broker
         - subscriber
       tty: true
+      volumes:
+        - ./data:/data
 
   subscriber:
       build:
@@ -30,9 +32,6 @@ services:
       ports:
         - "5000:5000"
       volumes:
-        - /data
+        - ./data:/data
       depends_on:
         - broker
-
-volumes:
-  data:
