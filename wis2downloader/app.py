@@ -252,9 +252,10 @@ def fetch_openapi():
     ]
     return jsonify(openapi_doc)
 
+
 @app.route('/health')
 def health_check():
-    return Response(response=json.dumps({'status':'healthy'}), status=200,
+    return Response(response=json.dumps({'status': 'healthy'}), status=200,
                     mimetype="application/json")
 
 
