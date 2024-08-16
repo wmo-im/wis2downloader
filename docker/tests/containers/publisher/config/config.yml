@@ -1,0 +1,9 @@
+# RFC1738 URL
+broker: mqtt://broker:1883
+# clean mqtt session on connection. Set to false to start from server saved offset
+clean_session: true
+# whether to verify data and message
+verify_data: true
+validate_message: true
+
+
