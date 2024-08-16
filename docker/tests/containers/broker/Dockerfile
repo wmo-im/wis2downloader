@@ -1,5 +1,7 @@
 FROM eclipse-mosquitto
 COPY entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 COPY ./config /mosquitto/config
 
 RUN chown mosquitto:mosquitto /mosquitto/config/password.txt && \
