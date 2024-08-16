@@ -1,1 +1,38 @@
-services:  broker:    build:      context: ./containers/broker/      dockerfile: Dockerfile    container_name: broker    ports:      - "1883:1883"  publisher:      build:        context: ./containers/publisher/        dockerfile: Dockerfile      container_name: publisher      depends_on:        - broker        - subscriber      tty: true  subscriber:      build:        context: ./../        dockerfile: Dockerfile      container_name: subscriber      environment:        DOWNLOAD_BROKER_HOST: "broker"        DOWNLOAD_BROKER_PORT: 1883        DOWNLOAD_BROKER_TRANSPORT: "tcp"        DOWNLOAD_DIR: "/data/downloads"      ports:        - "5000:5000"      volumes:        - /data      depends_on:        - brokervolumes:  data:
+services:
+  broker:
+    build:
+      context: ./containers/broker/
+      dockerfile: Dockerfile
+    container_name: broker
+    ports:
+      - "1883:1883"
+
+  publisher:
+      build:
+        context: ./containers/publisher/
+        dockerfile: Dockerfile
+      container_name: publisher
+      depends_on:
+        - broker
+        - subscriber
+      tty: true
+
+  subscriber:
+      build:
+        context: ./../
+        dockerfile: Dockerfile
+      container_name: subscriber
+      environment:
+        DOWNLOAD_BROKER_HOST: "broker"
+        DOWNLOAD_BROKER_PORT: 1883
+        DOWNLOAD_BROKER_TRANSPORT: "tcp"
+        DOWNLOAD_DIR: "/data/downloads"
+      ports:
+        - "5000:5000"
+      volumes:
+        - /data
+      depends_on:
+        - broker
+
+volumes:
+  data:
