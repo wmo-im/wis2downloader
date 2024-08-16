@@ -27,6 +27,7 @@ RUN python -m pip install pyopenssl --upgrade
 # copy all the code to the Docker image
 COPY config/. /app/config
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Set the working directory to /app
 WORKDIR /app/config
