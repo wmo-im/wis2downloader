@@ -17,7 +17,7 @@ jobs:
         working-directory: docker/tests
         run: |
           docker compose up -d
-      - name: Run tests
+      - name: Run CLI tests
         working-directory: docker/tests
         run: |
           # test adding a subscription
@@ -33,7 +33,24 @@ jobs:
           cat ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/openapi.bin
           # test deleting subscriptions
           docker exec subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/# 
-
+      - name: Run API tests
+        working-directory: docker/tests
+        run: |
+          # get metrics
+          curl http://localhost:5000/metrics          
+          # test adding a subscription
+          # docker exec subscriber wis2downloader add-subscription --topic cache/a/wis2/+/services/# 
+          # test listing subscriptions
+          # docker exec subscriber wis2downloader list-subscriptions
+          # publish a test message
+          docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
+            --config /pywis-pubsub/config/config.yml \
+            -i test -u "http://subscriber:5000/metrics"
+          sleep 1s
+          # cat file contents
+          #cat ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/openapi.bin
+          # test deleting subscriptions
+          #docker exec subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/#
       - name: Shutdown
         working-directory: docker/tests
         run: |
