@@ -41,8 +41,8 @@ jobs:
           VALIDATE_PYTHON_MYPY: false
           VALIDATE_PYTHON_RUFF: false
           VALIDATE_SHELL_SHFMT: false
-          VALIDATE_CHECKOV: true
-          VALIDATE_DOCKERFILE_HADOLINT: false
+          #VALIDATE_CHECKOV: true
+          #VALIDATE_DOCKERFILE_HADOLINT: false
           # VALIDATE_OPENAPI: false
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
