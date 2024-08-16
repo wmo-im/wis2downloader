@@ -213,8 +213,6 @@ def get_subscription(topic):
 @app.delete('/subscriptions/<path:topic>')
 def delete_subscription(topic):
     topic = unquote(topic)
-    is_topic_valid = False
-    msg = None
     # Topic validation
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
