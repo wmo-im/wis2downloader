@@ -29,6 +29,7 @@ jobs:
             -i test -u "http://subscriber:5000/openapi"
           sleep 1s
           # cat file contents
+          ls 
           cat ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/openapi.bin
           # test deleting subscriptions
           docker exec subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/# 
