@@ -195,11 +195,11 @@ def add_subscription():
 def get_subscription(topic):
     # Topic validation
     topic = unquote(topic)
-
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
+        msg = None
 
     if not is_topic_valid:
         abort(400, f"Invalid input ({msg})")
@@ -219,6 +219,7 @@ def delete_subscription(topic):
         is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
+        msg = None
 
     if not is_topic_valid:
         abort(400, f"Invalid input ({msg})")
