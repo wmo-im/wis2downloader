@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get install -y gettext-base
 
     # install python dependencies
-RUN python -m pip install gunicorn wis2downloader
+RUN python -m pip install gunicorn requests wis2downloader
 
 # upgrade certs
 RUN python -m pip install pyopenssl --upgrade
