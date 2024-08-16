@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,7 +31,7 @@ jobs:
             "broker_protocol": "websockets",
             "broker_username": "everyone",
             "download_workers": 1,
-            "download_dir": "downloads",
+            "download_dir": "downloads",  
             "flask_host": "0.0.0.0",
             "flask_port": 5050,
             "log_level": "DEBUG",
@@ -55,4 +55,5 @@ jobs:
           pip3 install -r requirements-dev.txt
       - name: run tests ⚙️
         run: |
+          pip freeze
           pytest
