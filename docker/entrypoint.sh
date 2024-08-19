@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "$(id -u):$(id-g)"
 # Update build uid and gid to align with those of instance
-sudo "usermod -u $(id -u) wis2downloader"
-sudo "groupmod -g $(id -g) wis2"
+sudo "usermod -u 1020 wis2downloader"
+sudo "groupmod -g 127 wis2"
 
 # remove wis2downloader from sudo group
 sudo "usermod -g wis2 wis2downloader"

@@ -62,9 +62,6 @@ RUN chown -R wis2downloader:wis2 /home/wis2downloader/app && \
     chmod 600 /home/wis2downloader/app/clean_downloads.cron
 
 USER wis2downloader
-
-ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
-
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
@@ -75,5 +72,6 @@ HEALTHCHECK --interval=1m --timeout=3s \
 
 # Final step as root user, updated in entrypoint
 USER root
+ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
