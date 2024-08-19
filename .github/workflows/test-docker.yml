@@ -18,6 +18,10 @@ jobs:
       - name: Build test environment
         working-directory: docker/tests
         run: |
+          # create env file
+          export USER_ID="$(id -u)"
+          export GROUP_ID="$(id -g)"
+          echo "${GROUP_ID}:${USER_ID}"
           docker compose build
           # make sure data directory exists has correct permissions
           mkdir ./data
@@ -25,8 +29,7 @@ jobs:
       - name: Run containers
         working-directory: docker/tests
         run: |
-          #export USER_ID=$(id -u)
-          #export GROUP_ID=$(id -g)
+          echo "${GROUP_ID}:${USER_ID}"
           docker compose up -d
       - name: Run CLI tests
         working-directory: docker/tests
