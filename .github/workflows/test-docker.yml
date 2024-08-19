@@ -36,10 +36,10 @@ jobs:
       - name: Run CLI tests
         working-directory: docker/tests
         run: |
+          docker logs subscriber
           docker exec subscriber bash -c "id -u"
           docker exec subscriber bash -c "id -g"          
           echo "Testing adding subscription"
-          sleep 60s
           docker ps
           # test adding a subscription
           docker exec subscriber  bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader add-subscription --topic cache/a/wis2/+/services/#" 
