@@ -181,8 +181,8 @@ def add_subscription():
     try:
         with open(CONFIG['mqtt_session_info'], 'w') as fh:
             json.dump(session_info, fh)
-    except Exception:
-        abort(500, "Internal server error")
+    except Exception as e:
+        abort(500, f"Internal server error: {e}")
 
     response = jsonify(subs[topic])
     response.status_code = 201
@@ -237,6 +237,7 @@ def delete_subscription(topic):
                     mimetype="application/json")
 
 
+@app.route('')
 @app.route('/swagger')
 def render_swagger():
     return render_template('swagger.html', )
