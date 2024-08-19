@@ -17,16 +17,17 @@ ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
 ENV GROUP_ID 1001
 ENV USER_ID 1001
-# Update / upgrade
+
+# Update, upgrade packages and install / clean up
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git
-
+    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git=1:2.39.2-1.1 && \
+    && rm -rf /var/lib/apt/lists/*
 
 # Now setup python env and default user
-RUN groupadd -g "$GROUP_ID" wis2
-RUN useradd -u "$USER_ID" wis2downloader
-RUN usermod -aG wis2 wis2downloader
+RUN groupadd -g "$GROUP_ID" wis2 && \
+    useradd -l -u "$USER_ID" wis2downloader && \
+    usermod -aG wis2 wis2downloader
 
 USER wis2downloader
 WORKDIR /home/wis2downloader
@@ -39,9 +40,9 @@ RUN python3.12 -m venv /home/wis2downloader/.venv && \
 
 # install python dependencies
 RUN source /home/wis2downloader/.venv/bin/activate && \
-    python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 && \
+    python -m pip install --no-cache-dir gunicorn==23.0.0 requests==2.32.3 && \
     python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade && \
-    python -m pip install git+https://github.com/wmo-im/wis2downloader@docker2
+    python -m pip install --no-cache-dir git+https://github.com/wmo-im/wis2downloader@docker2
 
 # copy config and entrypoint to the Docker image
 COPY config/. /home/wis2downloader/app/config
