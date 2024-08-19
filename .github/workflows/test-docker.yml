@@ -25,8 +25,8 @@ jobs:
       - name: Run containers
         working-directory: docker/tests
         run: |
-          export USER_ID=$(id -u)
-          export GROUP_ID=$(id -g)
+          #export USER_ID=$(id -u)
+          #export GROUP_ID=$(id -g)
           docker compose up -d
       - name: Run CLI tests
         working-directory: docker/tests
