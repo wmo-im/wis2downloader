@@ -36,9 +36,8 @@ jobs:
       - name: Run CLI tests
         working-directory: docker/tests
         run: |
+          sleep 30s
           docker logs subscriber
-          docker exec subscriber bash -c "id -u"
-          docker exec subscriber bash -c "id -g"          
           echo "Testing adding subscription"
           docker ps
           # test adding a subscription
