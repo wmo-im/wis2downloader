@@ -1,5 +1,3 @@
-#checkov:skip=CKV_DOCKER_2:No healthcheck, dockerfile only used in testing
-#checkov:skip=CKV_DOCKER_3
 FROM python:3.12-slim-bookworm
 
 SHELL ["/bin/bash", "-c"]
@@ -61,5 +59,10 @@ USER wis2downloader
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
 ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
+
+# Add healthcheck
+HEALTHCHECK --interval=1m --timeout=3s \
+  CMD curl -f http://localhost:5000/subscriptions || exit 1
+
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "source .venv/bin/activate && gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
