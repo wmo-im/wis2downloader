@@ -29,10 +29,9 @@ services:
         DOWNLOAD_BROKER_HOST: "broker"
         DOWNLOAD_BROKER_PORT: 1883
         DOWNLOAD_BROKER_TRANSPORT: "tcp"
-        DOWNLOAD_DIR: "/data/downloads"
       ports:
         - "5000:5000"
       volumes:
-        - ./data:/data
+        - ./data:/home/wis2downloader/app/data/downloads
       depends_on:
         - broker

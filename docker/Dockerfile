@@ -2,39 +2,64 @@
 #checkov:skip=CKV_DOCKER_3
 FROM python:3.12-slim-bookworm
 
+SHELL ["/bin/bash", "-c"]
+
 # default ENV / config
-ENV DOWNLOAD_DIR /app/data/downloads
 ENV DOWNLOAD_BROKER_HOST "globalbroker.meteo.fr"
 ENV DOWNLOAD_BROKER_PORT 443
 ENV DOWNLOAD_BROKER_USERNAME "everyone"
 ENV DOWNLOAD_BROKER_PASSWORD "everyone"
 ENV DOWNLOAD_BROKER_TRANSPORT "websockets"
-ENV DOWNLOAD_WORKERS 8
+ENV DOWNLOAD_DIR "/home/wis2downloader/app/data/downloads"
 ENV DOWNLOAD_MIN_FREE_SPACE_GB 1
+ENV DOWNLOAD_RETENTION_PERIOD_HOURS 24
 ENV DOWNLOAD_VALIDATE_TOPICS "false"
-ENV LOG_PATH /app/logs
-ENV WIS2DOWNLOADER_CONFIG "/app/config/config.json"
-
+ENV DOWNLOAD_WORKERS 8
+ENV LOG_PATH "/home/wis2downloader/app/logs"
+ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
+ENV GROUP_ID 1001
+ENV USER_ID 1001
 # Update / upgrade
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6
+    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron
+
+
+# Now setup python env and default user
+RUN groupadd -g "${GROUP_ID}" wis2
+RUN useradd -u "${USER_ID}" wis2downloader
+RUN usermod -aG wis2 wis2downloader
+
+USER wis2downloader
+WORKDIR /home/wis2downloader
+
+USER wis2downloader
+
+RUN python3.12 -m venv /home/wis2downloader/.venv && \
+    echo "source /home/wis2downloader/.venv/bin/activate" >> .bashrc && \
+    echo "" >> .bashrc
 
 # install python dependencies
-RUN python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 wis2downloader==0.3.0
+RUN source /home/wis2downloader/.venv/bin/activate && \
+    python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 wis2downloader==0.3.0 && \
+    python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
 
-# upgrade certs
-RUN python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
+# copy config and entrypoint to the Docker image
+COPY config/. /home/wis2downloader/app/config
+COPY entrypoint.sh /home/wis2downloader/app/entrypoint.sh
+COPY clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
+COPY clean_downloads.py /home/wis2downloader/app/clean_downloads.py
 
-# copy all the code to the Docker image
-COPY config/. /app/config
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+USER root
+RUN chown -R wis2downloader:wis2 /home/wis2downloader/app
+RUN chmod +x /home/wis2downloader/app/entrypoint.sh
+RUN chmod 600 /home/wis2downloader/app/clean_downloads.py
+RUN chmod 600 /home/wis2downloader/app/clean_downloads.cron
 
+USER wis2downloader
 # Set the working directory to /app
-WORKDIR /app/config
-
-ENTRYPOINT [ "/entrypoint.sh" ]
-
+WORKDIR /home/wis2downloader
+RUN crontab ./app/clean_downloads.cron
+ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 # Run wis2downloader when the container launches
-CMD ["gunicorn","--bind","0.0.0.0:5000","--pythonpath","/usr/local/lib/python3.12/site-packages/","--workers", "1", "wis2downloader.app:app"]
+CMD ["/bin/bash", "-c", "source .venv/bin/activate && gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
