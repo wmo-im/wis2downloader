@@ -36,9 +36,7 @@ jobs:
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
             -i test -u "http://subscriber:5000/openapi"
-          sleep 5s
-          echo $(pwd)
-          ls -R .
+          sleep 1s
           # cat file contents (check the published file has been downloaded)
           cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
           # test deleting subscriptions
@@ -62,7 +60,7 @@ jobs:
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
             -i test -u "http://subscriber:5000/metrics"
-          sleep 5s
+          sleep 1s
           # cat file contents (check the published file has been downloaded)
           cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/metrics.bin"
           # test deleting subscriptions
