@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Update build uid and gid to align with those of instance
+echo "Before usermod"
 echo "$(id -g):$(id -u)"
 echo "$(whoami)"
 
 su - root
+echo "I am (g)root"
 echo "$(id -g):$(id -u)"
 echo "$(whoami)"
 usermod -u $(id -u) wis2downloader
@@ -12,6 +14,9 @@ groupmod -g $(id -g) wis2
 
 # switch to wis2downloader user
 su - wis2downloader
+echo "After usermod"
+echo "$(id -g):$(id -u)"
+echo "$(whoami)"
 
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
