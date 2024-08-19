@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Update build uid and gid to align with those of instance
+echo "$(id -g):$(id -u)"
+echo "$(whoami)"
+
 usermod -u $(id -u) wis2downloader
 groupmod -g $(id -g) wis2
 
