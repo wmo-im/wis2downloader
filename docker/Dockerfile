@@ -20,7 +20,7 @@ ENV USER_ID 1001
 # Update / upgrade
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162
+    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git
 
 
 # Now setup python env and default user
@@ -41,6 +41,8 @@ RUN python3.12 -m venv /home/wis2downloader/.venv && \
 RUN source /home/wis2downloader/.venv/bin/activate && \
     python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 wis2downloader==0.3.0 && \
     python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
+
+RUN pip install git+https://github.com/wmo-im/wis2downloader@docker2
 
 # copy config and entrypoint to the Docker image
 COPY config/. /home/wis2downloader/app/config
