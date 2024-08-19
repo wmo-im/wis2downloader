@@ -21,10 +21,10 @@ RUN apt-get update && \
     apt-get install -y gettext-base curl
 
 # install python dependencies
-RUN python -m pip install gunicorn requests wis2downloader
+RUN python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 wis2downloader==0.3.0
 
 # upgrade certs
-RUN python -m pip install pyopenssl --upgrade
+RUN python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
 
 # copy all the code to the Docker image
 COPY config/. /app/config

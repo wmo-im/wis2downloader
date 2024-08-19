@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get upgrade
 
 # install python dependencies
-RUN python -m pip install pywis-pubsub
+RUN python -m pip install --no-cache-dir pywis-pubsub==0.7.2
 COPY ./config /pywis-pubsub/config
 
 CMD ["bash"]
