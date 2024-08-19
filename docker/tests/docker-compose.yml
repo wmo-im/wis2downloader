@@ -32,6 +32,6 @@ services:
       depends_on:
         - broker
       volumes:
-        - ./data:/home/wis2downloader/app/data
+        - ./data:/home/wis2downloader/app/data/downloads
       user:
         wis2downloader

@@ -28,6 +28,8 @@ fi
 # print the config
 echo "Config:"
 cat /home/wis2downloader/app/config/config.json
+echo "session-info"
+cat "$DOWNLOAD_DIR/.session-info.json"
 # activate python env
 # shellcheck source=/dev/null
 source /home/wis2downloader/.venv/bin/activate
