@@ -27,6 +27,8 @@ services:
         DOWNLOAD_BROKER_HOST: "broker"
         DOWNLOAD_BROKER_PORT: 1883
         DOWNLOAD_BROKER_TRANSPORT: "tcp"
+        HOST_UID: ${USER_ID}
+        HOST_GID: ${GROUP_ID}
       ports:
         - "5000:5000"
       depends_on:

@@ -5,6 +5,7 @@ groupmod -g ${HOST_GID} wis2
 
 # now demote to wis2downlaoder user
 su - wis2downloader
+echo "Running entrypoint as $(whoami)"
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
 
