@@ -65,6 +65,8 @@ USER wis2downloader
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
+
+USER root
 ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 
 # Add healthcheck

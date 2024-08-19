@@ -4,6 +4,8 @@
 sudo usermod -u $(id -u) wis2downloader
 sudo groupmod -g $(id -g) wis2
 
+su wis2downloader
+
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
 
