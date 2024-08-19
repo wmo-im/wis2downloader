@@ -15,8 +15,8 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV HOST_UID 1001
-ENV HOST_GID 1001
+ENV GROUP_ID 1001
+ENV USER_ID 1001
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
