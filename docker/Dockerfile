@@ -15,8 +15,8 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV GROUP_ID 1001
-ENV USER_ID 1001
+#ENV GROUP_ID 1002
+#ENV USER_ID 1002
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
@@ -25,8 +25,13 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Now setup python env and default user
-RUN groupadd -g "$GROUP_ID" wis2 && \
-    useradd -l -u "$USER_ID" wis2downloader && \
+# RUN groupadd -g "$GROUP_ID" wis2 && \
+#     useradd -l -u "$USER_ID" wis2downloader && \
+#     usermod -aG wis2 wis2downloader
+
+# Now setup python env and default user
+RUN groupadd wis2 && \
+    useradd wis2downloader && \
     usermod -aG wis2 wis2downloader
 
 USER wis2downloader
