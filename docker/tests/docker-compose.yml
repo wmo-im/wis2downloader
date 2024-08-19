@@ -31,3 +31,7 @@ services:
         - "5000:5000"
       depends_on:
         - broker
+      volumes:
+        - ./data:/home/wis2downloader/app/data
+      user:
+        wis2downloader
