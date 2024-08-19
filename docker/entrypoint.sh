@@ -1,14 +1,10 @@
 #!/bin/bash
-echo "$(id -u):$(id -g)"
 # Update build uid and gid to align with those of instance
-usermod -u 1020 wis2downloader
-groupmod -g 127 wis2
-
-# remove wis2downloader from sudo group
-sudo "usermod -g wis2 wis2downloader"
+usermod -u ${HOST_UID} wis2downloader
+groupmod -g ${HOST_GID} wis2
 
 # now demote to wis2downlaoder user
-su -c wis2downloader
+su - wis2downloader
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
 
