@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "$@"
 su - wis2downloader
 # Update build uid and gid to align with those of instance
 sudo "usermod -u $(id -u) wis2downloader"
