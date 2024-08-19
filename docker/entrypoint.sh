@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Running as $(whoami)"
 echo "Current directory: $(pwd)"
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
@@ -8,6 +9,8 @@ if [ ! -d "$DOWNLOAD_DIR" ]; then
     echo "Creating download directory: $DOWNLOAD_DIR"
     mkdir -p "$DOWNLOAD_DIR"
 fi
+ls -althF "$DOWNLOAD_DIR"
+
 envsubst < /home/wis2downloader/app/config/config.template > /home/wis2downloader/app/config/config.json
 
 # if session-info.json does not exists in $DOWNLOAD_DIR, create it

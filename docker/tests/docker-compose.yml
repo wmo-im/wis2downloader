@@ -17,8 +17,6 @@ services:
         - broker
         - subscriber
       tty: true
-      volumes:
-        - ./data:/data
 
   subscriber:
       build:
@@ -31,7 +29,5 @@ services:
         DOWNLOAD_BROKER_TRANSPORT: "tcp"
       ports:
         - "5000:5000"
-      volumes:
-        - ./data:/home/wis2downloader/app/data/downloads
       depends_on:
         - broker
