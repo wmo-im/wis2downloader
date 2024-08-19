@@ -5,12 +5,8 @@ echo "Before usermod"
 echo "$(id -g):$(id -u)"
 echo "$(whoami)"
 
-su - root
-echo "I am (g)root"
-echo "$(id -g):$(id -u)"
-echo "$(whoami)"
-usermod -u $(id -u) wis2downloader
-groupmod -g $(id -g) wis2
+su -c "usermod -u $(id -u) wis2downloader" root
+su -c "groupmod -g $(id -g) wis2" root
 
 # switch to wis2downloader user
 su - wis2downloader
