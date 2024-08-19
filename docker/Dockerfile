@@ -56,10 +56,11 @@ COPY clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
 COPY clean_downloads.py /home/wis2downloader/app/clean_downloads.py
 
 USER root
-RUN chown -R wis2downloader:wis2 /home/wis2downloader/app
-RUN chmod +x /home/wis2downloader/app/entrypoint.sh
-RUN chmod 600 /home/wis2downloader/app/clean_downloads.py
-RUN chmod 600 /home/wis2downloader/app/clean_downloads.cron
+RUN chown -R wis2downloader:wis2 /home/wis2downloader/app && \
+    chmod +x /home/wis2downloader/app/entrypoint.sh && \
+    chmod 600 /home/wis2downloader/app/clean_downloads.py && \
+    chmod 600 /home/wis2downloader/app/clean_downloads.cron && \
+    usermod -aG sudo wis2downloader
 
 USER wis2downloader
 # Set the working directory to /app
