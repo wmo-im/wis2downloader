@@ -25,6 +25,8 @@ jobs:
       - name: Run containers
         working-directory: docker/tests
         run: |
+          export UID=$(id -u)
+          export GID=$(id -g)
           docker compose up -d
       - name: Run CLI tests
         working-directory: docker/tests
