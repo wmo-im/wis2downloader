@@ -1,18 +1,11 @@
 #!/bin/bash
-
+su - wis2downloader
 # Update build uid and gid to align with those of instance
-echo "Before usermod"
-echo "$(id -g):$(id -u)"
-echo "$(whoami)"
-
 sudo "usermod -u $(id -u) wis2downloader"
 sudo "groupmod -g $(id -g) wis2"
-sudo "usermode -g wis2 wis2downloader"
 
-# switch to wis2downloader user
-echo "After usermod"
-echo "$(id -g):$(id -u)"
-echo "$(whoami)"
+# remove wis2downloader from sudo group
+sudo "usermod -g wis2 wis2downloader"
 
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
@@ -22,6 +15,7 @@ if [ ! -d "$DOWNLOAD_DIR" ]; then
     echo "Creating download directory: $DOWNLOAD_DIR"
     mkdir -p "$DOWNLOAD_DIR"
 fi
+
 ls -althF "$DOWNLOAD_DIR"
 
 envsubst < /home/wis2downloader/app/config/config.template > /home/wis2downloader/app/config/config.json
