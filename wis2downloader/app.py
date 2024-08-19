@@ -237,7 +237,7 @@ def delete_subscription(topic):
                     mimetype="application/json")
 
 
-@app.route('')
+@app.route('/')
 @app.route('/swagger')
 def render_swagger():
     return render_template('swagger.html', )
