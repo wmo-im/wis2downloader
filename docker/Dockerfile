@@ -73,5 +73,6 @@ ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl -f http://localhost:5000/subscriptions || exit 1
 
+USER wis2downloader
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]

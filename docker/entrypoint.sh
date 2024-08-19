@@ -4,6 +4,9 @@
 echo "$(id -g):$(id -u)"
 echo "$(whoami)"
 
+su - root
+echo "$(id -g):$(id -u)"
+echo "$(whoami)"
 usermod -u $(id -u) wis2downloader
 groupmod -g $(id -g) wis2
 
