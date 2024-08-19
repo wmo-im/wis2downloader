@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Update build uid and gid to align with those of instance
-sudo usermod -u $(id -u) wis2downloader
-sudo groupmod -g $(id -g) wis2
+usermod -u $(id -u) wis2downloader
+groupmod -g $(id -g) wis2
 
-su wis2downloader
+# switch to wis2downloader user
+su - wis2downloader
 
 # print the download_dir
 echo "Download directory in container: $DOWNLOAD_DIR"
