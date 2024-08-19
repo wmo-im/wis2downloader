@@ -37,6 +37,8 @@ jobs:
             --config /pywis-pubsub/config/config.yml \
             -i test -u "http://subscriber:5000/openapi"
           sleep 1s
+          echo $(pwd)
+          ls -R .
           # cat file contents (check the published file has been downloaded)
           cat "./data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
           # test deleting subscriptions
