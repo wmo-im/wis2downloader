@@ -31,6 +31,8 @@ services:
         - "5000:5000"
       depends_on:
         - broker
+      user:
+        "${USER_ID}":"${GROUP_ID}"
       volumes:
-        - ./data:/home/wis2downloader/app/data/downloads
+        - ./data:/home/wis2downloader/app/data/downloads:rw
 
