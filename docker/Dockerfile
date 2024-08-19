@@ -15,23 +15,18 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV HOST_UID 1002
-ENV HOST_GID 1002
+ENV HOST_UID 1001
+ENV HOST_GID 1001
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git=1:2.39.2-1.1 sudo && \
+    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git=1:2.39.2-1.1 && \
     rm -rf /var/lib/apt/lists/*
 
 # Now setup python env and default user
-# RUN groupadd -g "$GROUP_ID" wis2 && \
-#     useradd -l -u "$USER_ID" wis2downloader && \
-#     usermod -aG wis2 wis2downloader
-
-# Now setup python env and default user
-RUN groupadd wis2 && \
-    useradd wis2downloader && \
+RUN groupadd -g "$GROUP_ID" wis2 && \
+    useradd -l -u "$USER_ID" wis2downloader && \
     usermod -aG wis2 wis2downloader
 
 USER wis2downloader
@@ -71,7 +66,6 @@ HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl -f http://localhost:5000/subscriptions || exit 1
 
 # Final step as root user, updated in entrypoint
-USER root
 ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
