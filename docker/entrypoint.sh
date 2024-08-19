@@ -1,6 +1,7 @@
 #!/bin/bash
 # Update build uid and gid to align with those of instance
 usermod -u ${HOST_UID} wis2downloader
+usermod -s /bin/bash wis2downloader
 groupmod -g ${HOST_GID} wis2
 
 # now demote to wis2downlaoder user
