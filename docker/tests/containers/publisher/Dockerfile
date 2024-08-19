@@ -1,3 +1,5 @@
+#checkov:skip=CKV_DOCKER_2:No healthcheck, dockerfile only used in testing
+#checkov:skip=CKV_DOCKER_3
 FROM python:3.11-slim-bookworm
 
 # Update / upgrade

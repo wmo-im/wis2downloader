@@ -1,7 +1,6 @@
 #checkov:skip=CKV_DOCKER_2:No healthcheck, dockerfile only used in testing
 #checkov:skip=CKV_DOCKER_3
-#checkov:skip=CKV_DOCKER_7
-FROM eclipse-mosquitto
+FROM eclipse-mosquitto:2.0.18
 COPY entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
