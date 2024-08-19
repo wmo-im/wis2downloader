@@ -59,12 +59,12 @@ USER root
 RUN chown -R wis2downloader:wis2 /home/wis2downloader/app && \
     chmod +x /home/wis2downloader/app/entrypoint.sh && \
     chmod 600 /home/wis2downloader/app/clean_downloads.py && \
-    chmod 600 /home/wis2downloader/app/clean_downloads.cron && \
-    usermod -aG sudo wis2downloader
+    chmod 600 /home/wis2downloader/app/clean_downloads.cron
+
+USER wis2downloader
 
 ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 
-USER wis2downloader
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
@@ -73,6 +73,7 @@ RUN crontab ./app/clean_downloads.cron
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl -f http://localhost:5000/subscriptions || exit 1
 
-USER wis2downloader
+# Final step as root user, updated in entrypoint
+USER root
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
