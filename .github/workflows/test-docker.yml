@@ -36,20 +36,22 @@ jobs:
       - name: Run CLI tests
         working-directory: docker/tests
         run: |
-          export USER_ID="$(id -u)"
-          export GROUP_ID="$(id -g)"          
-          echo "${GROUP_ID}:${USER_ID}"          
+          echo "Testing adding subscription"         
           # test adding a subscription
           docker exec subscriber  bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader add-subscription --topic cache/a/wis2/+/services/#" 
           # test listing subscriptions
+          echo "Testing listing subscriptions"         
           docker exec subscriber bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader list-subscriptions"
           # publish a test message
+          echo "Publishing test message"
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
             -i test -u "http://subscriber:5000/openapi"
           sleep 1s
+          echo "Verifying data downloaded"
           # cat file contents (check the published file has been downloaded)
           cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
+          echo "Testing removing subscription"
           # test deleting subscriptions
           docker exec subscriber bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader remove-subscription --topic cache/a/wis2/+/services/#"
       - name: Run API tests
