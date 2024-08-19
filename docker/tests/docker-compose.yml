@@ -33,5 +33,4 @@ services:
         - broker
       volumes:
         - ./data:/home/wis2downloader/app/data/downloads
-      user:
-        wis2downloader
+      user: 1001:1001

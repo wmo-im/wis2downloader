@@ -26,6 +26,8 @@ jobs:
       - name: Run CLI tests
         working-directory: docker/tests
         run: |
+          # make sure data directory has correct permissions
+          chown -R 1001:1001 ./data
           # test adding a subscription
           docker exec subscriber  bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader add-subscription --topic cache/a/wis2/+/services/#" 
           # test listing subscriptions
