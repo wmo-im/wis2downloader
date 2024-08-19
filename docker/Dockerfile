@@ -39,10 +39,9 @@ RUN python3.12 -m venv /home/wis2downloader/.venv && \
 
 # install python dependencies
 RUN source /home/wis2downloader/.venv/bin/activate && \
-    python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 wis2downloader==0.3.0 && \
-    python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
-
-RUN pip install git+https://github.com/wmo-im/wis2downloader@docker2
+    python -m pip install  --no-cache-dir gunicorn==23.0.0 requests==2.32.3 && \
+    python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade && \
+    python -m pip install git+https://github.com/wmo-im/wis2downloader@docker2
 
 # copy config and entrypoint to the Docker image
 COPY config/. /home/wis2downloader/app/config
