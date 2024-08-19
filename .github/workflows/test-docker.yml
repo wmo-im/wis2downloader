@@ -36,7 +36,7 @@ jobs:
             -i test -u "http://subscriber:5000/openapi"
           sleep 1s
           # cat file contents (check the published file has been downloaded)
-          cat ./data/downloads/$(date +"%Y")/$(date +"%m")/$(date +"%d")/cache/a/wis2/my-centre/services/downloader/openapi.bin
+          cat "./data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
           # test deleting subscriptions
           docker exec subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/# 
       - name: Run API tests
@@ -60,7 +60,7 @@ jobs:
             -i test -u "http://subscriber:5000/metrics"
           sleep 1s
           # cat file contents (check the published file has been downloaded)
-          cat ./data/downloads/`date +"%Y"`/`date +"%m"`/`date +"%d"`/cache/a/wis2/my-centre/services/downloader/metrics.bin
+          cat "./data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/metrics.bin"
           # test deleting subscriptions
           curl -X DELETE http://localhost:5000/subscriptions/cache/a/wis2/%2B/services/%23
       - name: Shutdown
