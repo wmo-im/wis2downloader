@@ -24,8 +24,8 @@ RUN apt-get update && \
 
 
 # Now setup python env and default user
-RUN groupadd -g "${GROUP_ID}" wis2
-RUN useradd -u "${USER_ID}" wis2downloader
+RUN groupadd wis2
+RUN useradd wis2downloader
 RUN usermod -aG wis2 wis2downloader
 
 USER wis2downloader

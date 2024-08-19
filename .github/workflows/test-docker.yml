@@ -27,9 +27,9 @@ jobs:
         working-directory: docker/tests
         run: |
           # test adding a subscription
-          docker exec source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader add-subscription --topic cache/a/wis2/+/services/# 
+          docker exec bash -c "source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader add-subscription --topic cache/a/wis2/+/services/#" 
           # test listing subscriptions
-          docker exec source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader list-subscriptions
+          docker exec bash -c "source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader list-subscriptions"
           # publish a test message
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
@@ -38,7 +38,7 @@ jobs:
           # cat file contents (check the published file has been downloaded)
           cat "./data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
           # test deleting subscriptions
-          docker exec source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/#
+          docker exec bash -c "source /home/wis2downloader/.venv/bin/activate && subscriber wis2downloader remove-subscription --topic cache/a/wis2/+/services/#"
       - name: Run API tests
         working-directory: docker/tests
         run: |
