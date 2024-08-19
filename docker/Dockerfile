@@ -62,13 +62,12 @@ RUN chown -R wis2downloader:wis2 /home/wis2downloader/app && \
     chmod 600 /home/wis2downloader/app/clean_downloads.cron && \
     usermod -aG sudo wis2downloader
 
+ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
+
 USER wis2downloader
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
-
-USER root
-ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 
 # Add healthcheck
 HEALTHCHECK --interval=1m --timeout=3s \

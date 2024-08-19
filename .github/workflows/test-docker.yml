@@ -36,7 +36,7 @@ jobs:
       - name: Run CLI tests
         working-directory: docker/tests
         run: |
-          sleep 30s
+          sleep 10s
           docker logs subscriber
           echo "Testing adding subscription"
           docker ps
