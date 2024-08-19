@@ -17,7 +17,7 @@ if [ ! -f "$DOWNLOAD_DIR/.session-info.json" ]; then
     echo '  "topics": {},' >> "$DOWNLOAD_DIR/.session-info.json"
     # generate a random string for client_id
     echo "Generating random client_id"
-    client_id=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+    client_id=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)
     echo "  \"client_id\": \"wis2box-wis2downloader-${client_id}\"" >> "$DOWNLOAD_DIR/.session-info.json"
     echo "}" >> "$DOWNLOAD_DIR/.session-info.json"
 fi
