@@ -20,7 +20,7 @@ ENV USER_ID 1001
 # Update / upgrade
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron
+    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162
 
 
 # Now setup python env and default user
@@ -65,4 +65,4 @@ HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl -f http://localhost:5000/subscriptions || exit 1
 
 # Run wis2downloader when the container launches
-CMD ["/bin/bash", "-c", "source .venv/bin/activate && gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
+CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
