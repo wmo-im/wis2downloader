@@ -27,7 +27,7 @@ jobs:
       - name: Run containers
         working-directory: docker/tests
         run: |  
-          export DOCKER_GID=$(getent group docker | cut -d: -f3)
+          export DOCKER_GID="$(getent group docker | cut -d: -f3)"
           docker compose up -d
       - name: Run CLI tests
         working-directory: docker/tests
