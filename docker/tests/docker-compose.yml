@@ -32,7 +32,6 @@ services:
         - "5000:5000"
       depends_on:
         - broker
-      user: "1001:1001"
       volumes:
         - ./data:/home/wis2downloader/app/data/downloads:rw
 

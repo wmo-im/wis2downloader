@@ -15,8 +15,7 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV GROUP_ID 1001
-ENV USER_ID 1001
+ENV USER_ID 12135
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
@@ -25,9 +24,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Now setup python env and default user
-RUN groupadd -g "$GROUP_ID" wis2 && \
-    useradd -l -u "$USER_ID" wis2downloader && \
-    usermod -aG wis2 wis2downloader
+RUN useradd -l -u "$USER_ID" wis2downloader
 
 USER wis2downloader
 WORKDIR /home/wis2downloader
@@ -51,7 +48,7 @@ COPY clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
 COPY clean_downloads.py /home/wis2downloader/app/clean_downloads.py
 
 USER root
-RUN chown -R wis2downloader:wis2 /home/wis2downloader/app && \
+RUN chown -R wis2downloader /home/wis2downloader/app && \
     chmod +x /home/wis2downloader/app/entrypoint.sh && \
     chmod 600 /home/wis2downloader/app/clean_downloads.py && \
     chmod 600 /home/wis2downloader/app/clean_downloads.cron
@@ -65,7 +62,6 @@ RUN crontab ./app/clean_downloads.cron
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl -f http://localhost:5000/subscriptions || exit 1
 
-# Final step as root user, updated in entrypoint
 ENTRYPOINT [ "/home/wis2downloader/app/entrypoint.sh" ]
 # Run wis2downloader when the container launches
 CMD ["/bin/bash", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 wis2downloader.app:app"]
