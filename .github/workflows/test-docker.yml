@@ -19,14 +19,15 @@ jobs:
         working-directory: docker/tests
         run: |
           # create user for wis2downloader
-          sudo usermod -aG docker $(whoami)
+          sudo usermod -aG docker "$(whoami)"
           docker compose build  # build containers
           mkdir ./data  # make sure data directory exists
           sudo chmod 770 ./data  # update permissions so group read / write
       - name: Run containers
         working-directory: docker/tests
         run: |  
-          export DOCKER_GID="$(getent group docker | cut -d: -f3)"
+          DOCKER_GID="$(getent group docker | cut -d: -f3)"
+          export DOCKER_GID
           docker compose up -d
       - name: Run CLI tests
         working-directory: docker/tests
