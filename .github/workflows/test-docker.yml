@@ -23,8 +23,7 @@ jobs:
           sudo usermod -aG docker wis2downloader
           docker compose build  # build containers
           mkdir ./data  # make sure data directory exists
-          cat /etc/group
-          sudo chown -R 1001:1001 ./data  # now set owner/group
+          sudo chmod 770 ./data  # update permissions so group read / write
       - name: Run containers
         working-directory: docker/tests
         run: |          
