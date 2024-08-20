@@ -32,6 +32,7 @@ services:
         - "5000:5000"
       depends_on:
         - broker
+      user: 12135:$DOCKER_GID
       volumes:
         - ./data:/home/wis2downloader/app/data/downloads:rw
 
