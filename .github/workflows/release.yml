@@ -1,0 +1,15 @@
+name: release
+
+on:
+  [push, release]
+
+jobs:
+  build-dist-artefacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          python -m build
+          ls -althF dist
