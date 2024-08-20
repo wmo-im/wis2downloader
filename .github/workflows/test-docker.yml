@@ -1,0 +1,81 @@
+name: test-docker-image
+
+on:
+  [ push, pull_request ]
+
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  test-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build test environment
+        working-directory: docker/tests
+        run: |
+          # create user for wis2downloader
+          sudo usermod -aG docker "$(whoami)"
+          docker compose build  # build containers
+          mkdir ./data  # make sure data directory exists
+          sudo chmod 770 ./data  # update permissions so group read / write
+      - name: Run containers
+        working-directory: docker/tests
+        run: |  
+          DOCKER_GID="$(getent group docker | cut -d: -f3)"
+          export DOCKER_GID
+          docker compose up -d
+      - name: Run CLI tests
+        working-directory: docker/tests
+        run: |
+          docker logs subscriber
+          echo "Testing adding subscription"
+          # test adding a subscription
+          docker exec subscriber  bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader add-subscription --topic cache/a/wis2/+/services/#" 
+          # test listing subscriptions
+          echo "Testing listing subscriptions"         
+          docker exec subscriber bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader list-subscriptions"
+          # publish a test message
+          echo "Publishing test message"
+          docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
+            --config /pywis-pubsub/config/config.yml \
+            -i test -u "http://subscriber:5000/openapi"
+          sleep 1s
+          echo "Verifying data downloaded"
+          # cat file contents (check the published file has been downloaded)
+          cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
+          echo "Testing removing subscription"
+          # test deleting subscriptions
+          docker exec subscriber bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader remove-subscription --topic cache/a/wis2/+/services/#"
+      - name: Run API tests
+        working-directory: docker/tests
+        run: |          
+          # get metrics
+          curl http://localhost:5000/metrics          
+          # test adding a subscription          
+          curl -X 'POST' \
+            'http://localhost:5000/subscriptions' \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d '{
+                "topic": "cache/a/wis2/+/services/#"
+            }'           
+          # test listing subscriptions
+          curl http://localhost:5000/subscriptions          
+          # publish a test message
+          docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
+            --config /pywis-pubsub/config/config.yml \
+            -i test -u "http://subscriber:5000/metrics"
+          sleep 1s
+          # cat file contents (check the published file has been downloaded)
+          cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/metrics.bin"
+          # test deleting subscriptions
+          curl -X DELETE http://localhost:5000/subscriptions/cache/a/wis2/%2B/services/%23
+      - name: Shutdown
+        working-directory: docker/tests
+        run: |
+          docker compose down

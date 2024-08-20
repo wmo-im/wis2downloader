@@ -181,8 +181,8 @@ def add_subscription():
     try:
         with open(CONFIG['mqtt_session_info'], 'w') as fh:
             json.dump(session_info, fh)
-    except Exception:
-        abort(500, "Internal server error")
+    except Exception as e:
+        abort(500, f"Internal server error: {e}")
 
     response = jsonify(subs[topic])
     response.status_code = 201
@@ -195,11 +195,11 @@ def add_subscription():
 def get_subscription(topic):
     # Topic validation
     topic = unquote(topic)
-
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
+        msg = None
 
     if not is_topic_valid:
         abort(400, f"Invalid input ({msg})")
@@ -213,12 +213,12 @@ def get_subscription(topic):
 @app.delete('/subscriptions/<path:topic>')
 def delete_subscription(topic):
     topic = unquote(topic)
-
     # Topic validation
     if CONFIG['validate_topics']:
         is_topic_valid, msg = validate_topic(topic)
     else:
         is_topic_valid = True
+        msg = None
 
     if not is_topic_valid:
         abort(400, f"Invalid input ({msg})")
@@ -237,9 +237,9 @@ def delete_subscription(topic):
                     mimetype="application/json")
 
 
+@app.route('/')
 @app.route('/swagger')
 def render_swagger():
-
     return render_template('swagger.html', )
 
 
@@ -252,6 +252,12 @@ def fetch_openapi():
         {"url": CONFIG['base_url']}
     ]
     return jsonify(openapi_doc)
+
+
+@app.route('/health')
+def health_check():
+    return Response(response=json.dumps({'status': 'healthy'}), status=200,
+                    mimetype="application/json")
 
 
 def run():

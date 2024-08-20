@@ -31,7 +31,7 @@ jobs:
             "broker_protocol": "websockets",
             "broker_username": "everyone",
             "download_workers": 1,
-            "download_dir": "downloads",
+            "download_dir": "downloads",  
             "flask_host": "0.0.0.0",
             "flask_port": 5050,
             "log_level": "DEBUG",
@@ -51,8 +51,13 @@ jobs:
       - name: Install requirements 📦
         run: |
           python3 -m pip install --upgrade pip 
-          pip3 install . 
+          pip3 install --no-cache .
           pip3 install -r requirements-dev.txt
       - name: run tests ⚙️
         run: |
+          python <<!
+          from wis2downloader.app import app
+          from wis2downloader.downloader import DownloadWorker
+          quit()
+          !
           pytest

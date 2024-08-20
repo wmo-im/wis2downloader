@@ -21,13 +21,9 @@ The WIS2 Downloader is a Flask-based Python application that allows you to conne
 
 ### 1. Installation
 
-**NOTE**: The downloader has not yet been uploaded to PyPI and needs to be installed directly from GitHub:
-
 ```bash
-pip install https://github.com/wmo-im/wis2downloader/archive/main.zip
+python -m pip install wis2downloader
 ```
-
-This will install the version from the main development branch.
 
 ### 2. Configuration
 
