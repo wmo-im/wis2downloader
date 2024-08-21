@@ -17,6 +17,10 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
         run:
+          # build
+          echo "Building ..."
           python -m build
+          # use twine
+          echo "Uploading ..."
           twine upload -r testpypi dist/*
 
