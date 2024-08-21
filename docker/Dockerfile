@@ -41,31 +41,28 @@ RUN source /home/wis2downloader/.venv/bin/activate && \
     python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
 
 USER root
-# Now copy and install python package \
+# Now copy files
 COPY . /home/wis2downloader/tmp
-RUN chown -R wis2downloader /home/wis2downloader/tmp
-
-USER wis2downloader
-WORKDIR /home/wis2downloader/tmp
-RUN source /home/wis2downloader/.venv/bin/activate && \
-    echo $(pwd) && \
-    echo $(ls) && \
-    python -m pip install --no-cache-dir . && \
-    cd .. && rm -R /home/wis2downloader/tmp
-
-# copy config and entrypoint to the Docker image
 COPY ./docker/config/. /home/wis2downloader/app/config
 COPY ./docker/entrypoint.sh /home/wis2downloader/app/entrypoint.sh
 COPY ./docker/clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
 COPY ./docker/clean_downloads.py /home/wis2downloader/app/clean_downloads.py
 
-USER root
-RUN chown -R wis2downloader /home/wis2downloader/app && \
+# set ownership / permisssions
+RUN chown -R wis2downloader /home/wis2downloader/tmp && \
+    chown -R wis2downloader /home/wis2downloader/app && \
     chmod +x /home/wis2downloader/app/entrypoint.sh && \
     chmod 600 /home/wis2downloader/app/clean_downloads.py && \
     chmod 600 /home/wis2downloader/app/clean_downloads.cron
 
 USER wis2downloader
+WORKDIR /home/wis2downloader/tmp
+RUN source /home/wis2downloader/.venv/bin/activate && \
+    python -m pip install --no-cache-dir .
+# clean up \
+WORKDIR /home/wis2downloader/
+RUN rm -R /home/wis2downloader/tmp
+
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron

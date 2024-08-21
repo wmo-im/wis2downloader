@@ -5,6 +5,12 @@ on:
   release:
     types: [publish]
 
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -34,10 +40,6 @@ jobs:
 
   ghcr-build-and-publish:
     runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
