@@ -1,0 +1,35 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  TWINE_USERNAME: __token__
+  TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
+
+jobs:
+  pypi-build-dist-artefacts-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pyenv
+        run: |
+          python -m pip install build twine
+      - name: Build and publish
+        run: |
+          # build
+          echo "Building ..."
+          python -m build
+          # use twine
+          echo "Uploading ..."
+          twine upload dist/*

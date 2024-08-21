@@ -1,9 +1,8 @@
 name: release
 
 on:
-  push:
   release:
-    types: [publish]
+    types: [published]
 
 permissions:
   contents: read
@@ -16,28 +15,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  #pypi-build-dist-artefacts-and-publish:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Checkout code
-  #      uses: actions/checkout@v4
-
-  #    - name: Setup pyenv
-  #      run: |
-  #        python -m pip install build twine
-
-  #    - name: Build and publish
-  #      env:
-  #        TWINE_USERNAME: __token__
-  #        TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
-  #      run: |
-  #        # build
-  #        echo "Building ..."
-  #        python -m build
-  #        # use twine
-  #        echo "Uploading ..."
-  #        twine upload -r testpypi dist/*
-
   ghcr-build-and-publish:
     runs-on: ubuntu-latest
     steps:
