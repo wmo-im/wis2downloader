@@ -5,6 +5,10 @@ on:
   release:
     types: [publish]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   #pypi-build-dist-artefacts-and-publish:
   #  runs-on: ubuntu-latest
