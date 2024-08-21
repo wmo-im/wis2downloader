@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: wis2downloader2 # ${{ github.repository }}
+  IMAGE_NAME: wmo-im/wis2downloader2 # ${{ github.repository }}
 
 jobs:
   #pypi-build-dist-artefacts-and-publish:
