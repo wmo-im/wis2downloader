@@ -20,8 +20,8 @@ services:
 
   subscriber:
       build:
-        context: ./../
-        dockerfile: Dockerfile
+        context: ./../../
+        dockerfile: ./docker/Dockerfile
       container_name: subscriber
       environment:
         DOWNLOAD_BROKER_HOST: "broker"
