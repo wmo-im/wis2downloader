@@ -18,7 +18,7 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
-        run:
+        run: |
           # build
           echo "Building ..."
           python -m build
