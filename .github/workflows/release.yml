@@ -4,13 +4,19 @@ on:
   [push, release]
 
 jobs:
-  build-dist-artefacts:
+  build-dist-artefacts-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build
+      - name: Setup
         run: |
-          python -m pip install build
+          python -m pip install build twine
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
+        run:
           python -m build
-          ls -althF dist
+          twine upload -r testpypi dist/*
+
