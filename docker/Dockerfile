@@ -1,7 +1,7 @@
 FROM python:3.12-slim-bookworm
+ARG USER_ID=12135
 
 SHELL ["/bin/bash", "-c"]
-
 # default ENV / config
 ENV DOWNLOAD_BROKER_HOST "globalbroker.meteo.fr"
 ENV DOWNLOAD_BROKER_PORT 443
@@ -15,7 +15,7 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV USER_ID 12135
+
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
