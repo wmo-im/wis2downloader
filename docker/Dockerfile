@@ -1,7 +1,7 @@
 FROM python:3.12-slim-bookworm
+ARG USER_ID=12135
 
 SHELL ["/bin/bash", "-c"]
-
 # default ENV / config
 ENV DOWNLOAD_BROKER_HOST "globalbroker.meteo.fr"
 ENV DOWNLOAD_BROKER_PORT 443
@@ -15,7 +15,7 @@ ENV DOWNLOAD_VALIDATE_TOPICS "false"
 ENV DOWNLOAD_WORKERS 8
 ENV LOG_PATH "/home/wis2downloader/app/logs"
 ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
-ENV USER_ID 12135
+
 
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
@@ -37,23 +37,32 @@ RUN python3.12 -m venv /home/wis2downloader/.venv && \
 
 # install python dependencies
 RUN source /home/wis2downloader/.venv/bin/activate && \
-    python -m pip install --no-cache-dir gunicorn==23.0.0 requests==2.32.3 && \
-    python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade && \
-    python -m pip install --no-cache-dir wis2downloader==0.3.0 # git+https://github.com/wmo-im/wis2downloader@docker2
-
-# copy config and entrypoint to the Docker image
-COPY config/. /home/wis2downloader/app/config
-COPY entrypoint.sh /home/wis2downloader/app/entrypoint.sh
-COPY clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
-COPY clean_downloads.py /home/wis2downloader/app/clean_downloads.py
+    python -m pip install --no-cache-dir gunicorn==23.0.0 requests==2.32.3 build==1.2.1 && \
+    python -m pip install --no-cache-dir pyopenssl==24.2.1 --upgrade
 
 USER root
-RUN chown -R wis2downloader /home/wis2downloader/app && \
+# Now copy files
+COPY . /home/wis2downloader/tmp
+COPY ./docker/config/. /home/wis2downloader/app/config
+COPY ./docker/entrypoint.sh /home/wis2downloader/app/entrypoint.sh
+COPY ./docker/clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
+COPY ./docker/clean_downloads.py /home/wis2downloader/app/clean_downloads.py
+
+# set ownership / permisssions
+RUN chown -R wis2downloader /home/wis2downloader/tmp && \
+    chown -R wis2downloader /home/wis2downloader/app && \
     chmod +x /home/wis2downloader/app/entrypoint.sh && \
     chmod 600 /home/wis2downloader/app/clean_downloads.py && \
     chmod 600 /home/wis2downloader/app/clean_downloads.cron
 
 USER wis2downloader
+WORKDIR /home/wis2downloader/tmp
+RUN source /home/wis2downloader/.venv/bin/activate && \
+    python -m pip install --no-cache-dir .
+# clean up \
+WORKDIR /home/wis2downloader/
+RUN rm -R /home/wis2downloader/tmp
+
 # Set the working directory to /app
 WORKDIR /home/wis2downloader
 RUN crontab ./app/clean_downloads.cron
