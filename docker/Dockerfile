@@ -20,7 +20,7 @@ ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
 # Update, upgrade packages and install / clean up
 RUN apt-get update && \
     apt-get upgrade && \
-    apt-get install -y gettext-base=0.21-12 curl=7.88.1-10+deb12u6 cron=3.0pl1-162 git=1:2.39.2-1.1 && \
+    apt-get install -y gettext-base curl cron git && \
     rm -rf /var/lib/apt/lists/*
 
 # Now setup python env and default user
