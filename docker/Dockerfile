@@ -18,6 +18,7 @@ ENV WIS2DOWNLOADER_CONFIG "/home/wis2downloader/app/config/config.json"
 
 
 # Update, upgrade packages and install / clean up
+# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get upgrade && \
     apt-get install -y gettext-base curl cron git && \
