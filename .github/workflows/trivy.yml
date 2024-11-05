@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build wis2downloader
         run: |
-          docker build -t wis2downloader:test .
+          docker build -t wis2downloader:test docker
       - name: Run Trivy vulnerability scanner on wis2downloader
         uses: aquasecurity/trivy-action@0.20.0
         env:
