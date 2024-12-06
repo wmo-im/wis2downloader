@@ -182,6 +182,12 @@ class DownloadWorker(BaseDownloader):
         response = None
         try:
             response = self.http.request('GET', _url)
+            # Check the response status code
+            if response.status != 200:
+                LOGGER.error(f"Error downloading {_url}, received status code: {response.status}")
+                # Increment failed download counter
+                FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
+                return
             # Get the filesize in KB
             filesize = len(response.data)
         except Exception as e:
