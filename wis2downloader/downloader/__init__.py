@@ -182,9 +182,8 @@ class DownloadWorker(BaseDownloader):
         try:
             response = self.http.request('GET', _url)
             if response.status != 200:
-                LOGGER.error(f"Error fetching file from {_url}.")
-                LOGGER.error(f".... Status code: {response.status}")
-                LOGGER.error(f".... Content: {response.data}")
+                LOGGER.error(f"Error downloading {_url}, received status code: {response.status}")
+                # Increment failed download counter
                 FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
                 return
             # Get the filesize in KB
