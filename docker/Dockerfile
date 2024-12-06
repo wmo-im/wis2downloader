@@ -44,10 +44,10 @@ RUN source /home/wis2downloader/.venv/bin/activate && \
 USER root
 # Now copy files
 COPY . /home/wis2downloader/tmp
-COPY ./docker/config/. /home/wis2downloader/app/config
-COPY ./docker/entrypoint.sh /home/wis2downloader/app/entrypoint.sh
-COPY ./docker/clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
-COPY ./docker/clean_downloads.py /home/wis2downloader/app/clean_downloads.py
+COPY config/. /home/wis2downloader/app/config
+COPY entrypoint.sh /home/wis2downloader/app/entrypoint.sh
+COPY clean_downloads.cron /home/wis2downloader/app/clean_downloads.cron
+COPY clean_downloads.py /home/wis2downloader/app/clean_downloads.py
 
 # set ownership / permisssions
 RUN chown -R wis2downloader /home/wis2downloader/tmp && \
@@ -59,7 +59,8 @@ RUN chown -R wis2downloader /home/wis2downloader/tmp && \
 USER wis2downloader
 WORKDIR /home/wis2downloader/tmp
 RUN source /home/wis2downloader/.venv/bin/activate && \
-    python -m pip install --no-cache-dir .
+    python -m pip install wis2downloader
+
 # clean up \
 WORKDIR /home/wis2downloader/
 RUN rm -R /home/wis2downloader/tmp

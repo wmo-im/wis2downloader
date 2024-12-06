@@ -135,10 +135,9 @@ class DownloadWorker(BaseDownloader):
 
         # Get information about the job for verification later
         expected_hash, hash_function = self.get_hash_info(job)
-        expected_size = job.get('payload', {}).get('content', {}).get('size')
 
         # Get the download url, update status, and file type from the job links
-        _url, update, media_type = self.get_download_url(job)
+        _url, update, media_type, expected_size = self.get_download_url(job)
 
         if _url is None:
             LOGGER.warning(f"No download link found in job {job}")
@@ -182,6 +181,12 @@ class DownloadWorker(BaseDownloader):
         response = None
         try:
             response = self.http.request('GET', _url)
+            if response.status != 200:
+                LOGGER.error(f"Error fetching file from {_url}.")
+                LOGGER.error(f".... Status code: {response.status}")
+                LOGGER.error(f".... Content: {response.data}")
+                FAILED_DOWNLOADS.labels(topic=topic, centre_id=centre_id).inc(1)
+                return
             # Get the filesize in KB
             filesize = len(response.data)
         except Exception as e:
@@ -230,7 +235,7 @@ class DownloadWorker(BaseDownloader):
 
     def get_hash_info(self, job):
         expected_hash = job.get('payload', {}).get(
-            'properties', {}).get('integrity', {}).get('hash')
+            'properties', {}).get('integrity', {}).get('value')
         hash_method = job.get('payload', {}).get(
             'properties', {}).get('integrity', {}).get('method')
 
@@ -238,8 +243,10 @@ class DownloadWorker(BaseDownloader):
 
         # Check if hash method is known using our enumumeration of hash methods
         if hash_method in VerificationMethods._member_names_:
+            # get method
             method = VerificationMethods[hash_method].value
-            hash_function = hashlib.new(method)
+            # load and return from the hashlib library
+            hash_function = getattr(hashlib, method, None)
 
         return expected_hash, hash_function
 
@@ -248,18 +255,21 @@ class DownloadWorker(BaseDownloader):
         _url = None
         update = False
         media_type = None
+        expected_size = None
         for link in links:
             if link.get('rel') == 'update':
                 _url = link.get('href')
                 media_type = link.get('type')
+                expected_size = link.get('length')
                 update = True
                 break
             elif link.get('rel') == 'canonical':
                 _url = link.get('href')
                 media_type = link.get('type')
+                expected_size = link.get('length')
                 break
 
-        return _url, update, media_type
+        return _url, update, media_type, expected_size
 
     def extract_filename(self, _url) -> tuple:
         path = urlsplit(_url).path
@@ -273,8 +283,12 @@ class DownloadWorker(BaseDownloader):
                     hash_function):
             return True
 
-        hash_value = hash_function(data).digest()
-        hash_value = base64.b64encode(hash_value).decode()
+        try:
+            hash_value = hash_function(data).digest()
+            hash_value = base64.b64encode(hash_value).decode()
+        except Exception as e:
+            LOGGER.error(e)
+            return False
         if (hash_value != expected_hash) or (len(data) != expected_size):
             return False
 
