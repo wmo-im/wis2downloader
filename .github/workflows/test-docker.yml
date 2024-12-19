@@ -53,6 +53,8 @@ jobs:
           echo "Testing removing subscription"
           # test deleting subscriptions
           docker exec subscriber bash -c "source /home/wis2downloader/.venv/bin/activate && wis2downloader remove-subscription --topic cache/a/wis2/+/services/#"
+          # clean up, remove test download
+          docker exec subscriber bash -c "rm \"./app/data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin\""
       - name: Run API tests
         working-directory: docker/tests
         run: |          
@@ -71,12 +73,14 @@ jobs:
           # publish a test message
           docker exec publisher pywis-pubsub publish --topic cache/a/wis2/my-centre/services/downloader \
             --config /pywis-pubsub/config/config.yml \
-            -i test -u "http://subscriber:5000/metrics"
+            -i test -u "http://subscriber:5000/openapi"
           sleep 1s
           # cat file contents (check the published file has been downloaded)
-          cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/metrics.bin"
+          cat "./data/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin"
           # test deleting subscriptions
           curl -X DELETE http://localhost:5000/subscriptions/cache/a/wis2/%2B/services/%23
+          # clean up, remove test download
+          docker exec subscriber bash -c "rm \"./app/data/downloads/$(date +'%Y')/$(date +'%m')/$(date +'%d')/cache/a/wis2/my-centre/services/downloader/openapi.bin\""
       - name: Shutdown
         working-directory: docker/tests
         run: |
