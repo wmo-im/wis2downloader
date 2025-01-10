@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         image:
-          - wis2box-ui
+          - wis2downloader
 
     steps:
       - name: Checkout branch
