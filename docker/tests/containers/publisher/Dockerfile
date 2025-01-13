@@ -4,7 +4,7 @@ FROM python:3.11-slim-bookworm
 
 # Update / upgrade
 RUN apt-get update && \
-    apt-get upgrade
+    apt-get upgrade -y
 
 # install python dependencies
 RUN python -m pip install --no-cache-dir pywis-pubsub==0.7.2
